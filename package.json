@@ -1,0 +1,27 @@
+{
+    "name": "shiterator",
+    "version": "0.0.1",
+    "description": "Collect application errors and post to your bugtrack.",
+    "keywords" : ["error", "bugtrack"],
+    "homepage": "http://geometria-lab.net",
+    "author": "Geometria Lab",
+    "contributors": [
+        { "name": "Ivan Shumkov", "email": "ivan@shumkov.ru" }
+    ],
+    "main": "./server",
+    "bin" : {
+        "beseda-client" : "./server/bin/shiterator.js"
+    },
+    "repository": {
+        "type" : "git",
+        "url"  : "git://github.com/geometria-lab/Shiterator.git"
+    },
+    "dependencies" : {
+        "cli"        : ">=0.3.3"
+    },
+    "engines" : [ "node >=0.4" ],
+    "licenses" : [{
+        "type" : "BSD",
+        "url"  : "http://www.opensource.org/licenses/bsd-license.php"
+    }]
+}
