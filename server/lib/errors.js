@@ -1,7 +1,3 @@
-var JavaScriptError = require('./errors/javascript.js'),
-    PHPError        = require('./errors/php_error.js'),
-    PHPException    = require('./errors/php_exception.js');
-
 module.exports = Errors = function() {
     this._errors = {};
 }
@@ -19,10 +15,10 @@ Errors.prototype.post = function(bugtrack) {
     for (var subject in this._errors) {
         var error = this._errors[subject];
 
-        var ticket = bugtrack.get(error);
+        var issue = bugtrack.get(error);
 
-        if (ticket) {
-            ticket.update(error);
+        if (issue) {
+            issue.update(error);
         } else {
             bugtrack.post(error);
         }
@@ -36,9 +32,3 @@ Errors.prototype.clear = function() {
 
     return this;
 }
-
-Errors.TYPES = {
-    'javaScript'   : JavaScriptError,
-    'phpError'     : PHPError,
-    'phpException' : PHPException
-};

@@ -1,5 +1,8 @@
-module.exports = JavaScriptError = function(json) {
-    for (var i = 0; i < Errors.REQUIRED_FIELDS; i++) {
-        this[Errors.REQUIRED_FIELDS[i]] = json[Errors.REQUIRED_FIELDS[i]];
-    }
+var util = require('util');
+var Error = require('./error.js');
+
+module.exports = JavaScript = function(json) {
+    this._setFields(Error, json);
 }
+
+util.inherits(JavaScript, Error);
