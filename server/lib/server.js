@@ -33,12 +33,12 @@ Server.prototype._postErrors = function() {
 }
 
 Server.prototype._handleRequest = function(request, response) {
-    var rawError = ''
+    var raw = ''
     request.on('data', function(chunk) {
-        rawError += chunk;
+        raw += chunk;
     });
     request.on('end', function() {
-        var error = Errors.create(rawError);
+        var error = Error.create(raw);
 
         if (error) {
             this._errors.add(error);

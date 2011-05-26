@@ -37,31 +37,8 @@ Errors.prototype.clear = function() {
     return this;
 }
 
-Errors.REQUIRED_FIELDS = [ 'type', 'subject', 'message', 'line', 'file' ];
-
 Errors.TYPES = {
     'javaScript'   : JavaScriptError,
     'phpError'     : PHPError,
     'phpException' : PHPException
 };
-
-Errors.create = function(rawError) {
-    try {
-        var jsonError = JSON.parse(rawError);
-    } catch (e) {
-        return false;
-    }
-
-    for (var i = 0; i < Errors.REQUIRED_FIELDS; i++) {
-        if (!jsonError[Errors.REQUIRED_FIELDS[i]]) {
-            return false;
-        }
-    }
-
-    var errorClass = Errors.TYPES[jsonError.type];
-    if (!errorClass) {
-        return false;
-    }
-
-    return new errorClass(jsonError);
-}
