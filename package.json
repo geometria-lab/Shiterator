@@ -9,9 +9,6 @@
         { "name": "Ivan Shumkov", "email": "ivan@shumkov.ru" }
     ],
     "main": "./server",
-    "bin" : {
-        "beseda-client" : "./server/bin/shiterator.js"
-    },
     "repository": {
         "type" : "git",
         "url"  : "git://github.com/geometria-lab/Shiterator.git"

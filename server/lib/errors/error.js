@@ -7,7 +7,7 @@ Error.prototype._setFields = function(error, json) {
         this[error.REQUIRED_FIELDS[i]] = json[error.REQUIRED_FIELDS[i]];
     }
 
-    this.time = Date.now();
+    this.time = new Date();
 }
 
 Error.TYPES = {
@@ -16,15 +16,9 @@ Error.TYPES = {
     phpException : require('./errors/php_exception.js')
 };
 
-Error.REQUIRED_FIELDS = [ 'subject', 'message', 'line', 'file', 'stack', 'url', 'referer', 'userAgent', 'custom' ];
+Error.REQUIRED_FIELDS = [ 'subject', 'message', 'line', 'file', 'stack', 'tracker', 'custom' ];
 
-Error.create = function(raw) {
-    try {
-        var json = JSON.parse(raw);
-    } catch (e) {
-        return false;
-    }
-
+Error.create = function(json) {
     var error;
     if (json.type == undefined || !(error = Error.TYPES[json.type])) {
         return false;

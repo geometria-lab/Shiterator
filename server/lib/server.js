@@ -4,19 +4,28 @@ var http = require('http'),
 
 var Errors = require('./errors.js');
 
-var RedmineBugTrack = require('./bugtrack/redmine.js');
-
 module.exports = Server = function(options) {
     this._options = utils.merge({
         host : '0.0.0.0',
         port : 6666,
 
-        updateInterval : 60, // 1 minute
+        updateInterval : 50, //60 * 3, // 3 minute
 
-        bugtrack : {}
+        tracker : {
+            name     : null,
+            host     : null,
+            port     : 80,
+            login    : null,
+            password : null
+        }
     }, options);
 
-    this._bugtrack = new RedmineBugTrack();
+    if (this._options.tracker.constructor == Object) {
+        var tracker = Server.BUGTRACKS[this._options.tracker.name];
+        this._tracker = new tracker(this._options.tracker);
+    } else {
+        this._tracker = this._options.tracker;
+    }
 
     this._errors = new Errors(this);
 
@@ -28,25 +37,32 @@ module.exports = Server = function(options) {
 }
 
 Server.prototype._postErrors = function() {
-    this._errors.post(this._bugtrack);
+    this._errors.post(this._tracker);
     this._errors.clear();
 }
 
 Server.prototype._handleRequest = function(request, response) {
-    var raw = ''
+    var errorsRaw = ''
     request.on('data', function(chunk) {
-        raw += chunk;
+        errorsRaw += chunk;
     });
     request.on('end', function() {
-        var error = Error.create(raw);
+        response.writeHead(201);
+        response.end();
 
-        if (error) {
-            this._errors.add(error);
-            response.writeHead(200);
-            response.end();
-        } else {
-            response.writeHead(401);
-            response.end();
+        try {
+            var errorsJson = JSON.parse(errorsRaw);
+        } catch (e) {
+
+        }
+
+        if (Array.isArray(errorsJson) && errorsJson.length) {
+            for (var i = 0; i < errorsJson.length; i++) {
+                var error = Error.create(errorsJson[i]);
+                if (error && this._tracker.isValidError(error)) {
+                    this._errors.add(error);
+                }
+            }
         }
     }.bind(this));
 }
@@ -55,3 +71,6 @@ Server.prototype.listen = function(port, host) {
     this._httpServer.listen(port || this._options.port, host || this._options.host);
 }
 
+Server.BUGTRACKS = {
+    redmine : require('./trackers/redmine.js')
+}
