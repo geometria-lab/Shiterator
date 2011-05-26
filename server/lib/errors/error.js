@@ -1,11 +1,22 @@
 module.exports = Error = function(json) {
-    for (var i = 0; i < Errors.REQUIRED_FIELDS; i++) {
-        this[Error.REQUIRED_FIELDS[i]] = json[Error.REQUIRED_FIELDS[i]];
-    }
-
+    this._setFields(Error, json);
 }
 
-Error.REQUIRED_FIELDS = [ 'type', 'subject', 'message', 'line', 'file', 'url', 'time', 'referer' ];
+Error.prototype._setFields = function(error, json) {
+    for (var i = 0; i < error.REQUIRED_FIELDS; i++) {
+        this[error.REQUIRED_FIELDS[i]] = json[error.REQUIRED_FIELDS[i]];
+    }
+
+    this.time = Date.now();
+}
+
+Error.TYPES = {
+    javaScript   : require('./errors/javascript.js'),
+    phpError     : require('./errors/php_error.js'),
+    phpException : require('./errors/php_exception.js')
+};
+
+Error.REQUIRED_FIELDS = [ 'subject', 'message', 'line', 'file', 'stack', 'url', 'referer', 'userAgent', 'custom' ];
 
 Error.create = function(raw) {
     try {
@@ -14,16 +25,16 @@ Error.create = function(raw) {
         return false;
     }
 
-    for (var i = 0; i < Error.REQUIRED_FIELDS; i++) {
-        if (!json[Error.REQUIRED_FIELDS[i]]) {
+    var error;
+    if (json.type == undefined || !(error = Error.TYPES[json.type])) {
+        return false;
+    }
+
+    for (var i = 0; i < error.REQUIRED_FIELDS; i++) {
+        if (!json[error.REQUIRED_FIELDS[i]]) {
             return false;
         }
     }
 
-    var errorClass = Errors.TYPES[json.type];
-    if (!errorClass) {
-        return false;
-    }
-
-    return new errorClass(json);
+    return new error(json);
 }

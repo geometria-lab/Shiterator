@@ -13,7 +13,7 @@ module.exports = Server = function(options) {
 
         updateInterval : 60, // 1 minute
 
-        bugtrack : 'redmine'
+        bugtrack : {}
     }, options);
 
     this._bugtrack = new RedmineBugTrack();
@@ -23,7 +23,7 @@ module.exports = Server = function(options) {
     this._httpServer = http.createServer();
     this._httpServer.on('request', this._handleRequest.bind(this));
 
-    this._updateInterval = setInterval(this._postErrors.bind(this._errors),
+    this._updateInterval = setInterval(this._postErrors.bind(this),
                                        this._options.updateInterval);
 }
 
