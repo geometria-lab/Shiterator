@@ -54,16 +54,6 @@ Redmine.prototype.post = function(error, count) {
     request.end();
 };
 
-Redmine.prototype.isValidError = function(error) {
-    for (var i = 0; i < Redmine.REQUIRED_FIELDS.length; i++) {
-        if (!error.tracker[Redmine.REQUIRED_FIELDS[i]]) {
-            return false;
-        }
-    }
-
-    return true;
-};
-
 Redmine.prototype._create = function(error, count) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                '<issue>' +
@@ -161,5 +151,15 @@ Redmine.prototype._addOptions = function(options) {
         }
     }, options);
 }
+
+Redmine.prototype.isValidError = function(error) {
+    for (var i = 0; i < Redmine.REQUIRED_FIELDS.length; i++) {
+        if (!error.tracker[Redmine.REQUIRED_FIELDS[i]]) {
+            return false;
+        }
+    }
+
+    return true;
+};
 
 Redmine.REQUIRED_FIELDS = ['project', 'id', 'priority' ];

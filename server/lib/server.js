@@ -11,7 +11,7 @@ module.exports = Server = function(options) {
         host : '0.0.0.0',
         port : 6666,
 
-        updateInterval : 60 * 1, // 3 minute
+        updateInterval : 60 * 3, // 3 minute
 
         tracker : {
             name     : null,
@@ -24,6 +24,9 @@ module.exports = Server = function(options) {
 
     if (this._options.tracker.constructor == Object) {
         var tracker = Server.BUGTRACKS[this._options.tracker.name];
+        if (!tracker) {
+            throw new Error('Invalid tracker name');
+        }
         this._tracker = new tracker(this._options.tracker);
     } else {
         this._tracker = this._options.tracker;

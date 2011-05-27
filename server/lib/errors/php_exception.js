@@ -1,9 +1,9 @@
 var util = require('util');
-var ShiteratorError    = require('./error.js'),
-    PHPError = require('./php_error.js');
+
+var ShiteratorError = require('./error.js');
 
 module.exports = PHPException = function(json) {
-    this._setFields(PHPError, json);
+    this._setFields(json);
 }
 
 util.inherits(PHPException, ShiteratorError);
