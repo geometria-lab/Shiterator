@@ -14,7 +14,6 @@
         "url"  : "git://github.com/geometria-lab/Shiterator.git"
     },
     "dependencies" : {
-        "cli"        : ">=0.3.3",
         "o3-xml"     : "*"
     },
     "engines" : [ "node >=0.4" ],
