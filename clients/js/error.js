@@ -6,6 +6,9 @@
 
 (function($){
     // send errors
+    var errorStore = [], // TODO put this store in cookies or flash store
+        maxErrors = 10;
+    
     function postErrors(message, file, line){
         var referer = window.location,
             subject = file + ':' + line + ' ' + message,
@@ -19,7 +22,10 @@
                 'referer'   : referer                
             },
             url = '/error/';
-        $.post(url, data);
+        if( errorStore.indexOf(subject) == -1 && errorStore.length < maxErrors){
+            errorStore.push(subject);
+            $.post(url, data);
+        }
     }
     window.onerror =  postErrors;
 })(jQuery);
