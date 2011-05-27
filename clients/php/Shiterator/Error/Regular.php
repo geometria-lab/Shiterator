@@ -2,97 +2,123 @@
 
 namespace Shiterator\Error;
 
-class Regular extends AbstractError
+abstract class Regular extends AbstractError
 {
     public function __construct($message, $file, $line)
     {
         $backTrace = debug_backtrace();
         array_shift($backTrace);
-        array_shift($backTrace);
+        //array_shift($backTrace);
 
         $this->_data = array(
             'type'    => 'phpError',
-            'subject' => "{$this->_title} on $file:$line",
+            'subject' => static::$_title ." on $file:$line",
             'message' => $message,
-            'line'    => $file,
-            'file'    => $line,
-            'stack'   => self::_backtraceToString($backTrace),
+            'file'    => $file,
+            'line'    => $line,
+            'stack'   => static::_backtraceToString($backTrace),
             'tracker' => array(),
-            'custom'  => array(),
+            'custom'  => static::_getCustom(),
         );
 
         unset($backTrace);
     }
 
-    protected static function _backtraceToString($backTrace)
+    protected static function _backtraceToString(array $backTrace)
     {
+        $string = '';
+        foreach($backTrace as $k => $v){
+            $string .= "#$k ";
 
+            if (isset($v['file'])) {
+                $string .= "{$v['file']}";
+                if (isset($v['line'])) {
+                    $string .= "({$v['line']}) ";
+                }
+            } else {
+                $string .= '{main}';
+            }
 
+            $string .= ": {$v['function']}(";
+
+            if ($v['function'] == 'include' || $v['function'] == 'include_once' || $v['function'] == 'require_once' || $v['function'] == 'require') {
+                $string .= $v['args'][0];
+            }
+            $string .= ")\n";
+        }
         unset($backTrace);
+
+        return $string;
     }
 }
 
 class Error extends Regular
 {
-    protected $_title = 'Fatal error';
+    protected static $_title = 'Fatal error';
+    protected static $_isFatal = true;
 }
 
 class Warning extends Regular
 {
-    protected $_title = 'Warning';
+    protected static $_title = 'Warning';
 }
 
 class Parse extends Regular
 {
-    protected $_title = 'Parse error';
+    protected static$_title = 'Parse error';
+    protected static $_isFatal = true;
 }
 
 class Notice extends Regular
 {
-    protected $_title = 'Notice';
+    protected static $_title = 'Notice';
 }
 
 class CoreError extends Regular
 {
-    protected $_title = 'Core (startup) fatal error';
+    protected static $_title = 'Core (startup) fatal error';
+    protected static $_isFatal = true;
 }
 
 class CoreWarning extends Regular
 {
-    protected $_title = 'Core (startup) warning';
+    protected static $_title = 'Core (startup) warning';
 }
 
 class CompileError extends Regular
 {
-    protected $_title = 'Compile-time fatal error';
+    protected static $_title = 'Compile-time fatal error';
+    protected static $_isFatal = true;
 }
 
 class CompileWarning extends Regular
 {
-    protected $_title = 'Compile-time warning';
+    protected static $_title = 'Compile-time warning';
 }
 
 class UserError extends Regular
 {
-    protected $_title = 'User error';
+    protected static $_title = 'User error';
+    protected static $_isFatal = true;
 }
 
 class UserWarning extends Regular
 {
-    protected $_title = 'User warning';
+    protected static $_title = 'User warning';
 }
 
 class UserNotice extends Regular
 {
-    protected $_title = 'User notice';
+    protected static $_title = 'User notice';
 }
 
 class Strict extends Regular
 {
-    protected $_title = 'Strict notice';
+    protected static $_title = 'Strict notice';
 }
 
 class RecoverableError extends Regular
 {
-    protected $_title = 'Catchable fatal error';
+    protected static $_title = 'Catchable fatal error';
+    protected static $_isFatal = true;
 }

@@ -1,15 +1,17 @@
 // Start server
 var http = require('http'),
+    util = require('util'),
     utils = require('./utils.js');
 
-var Errors = require('./errors.js');
+var Errors = require('./errors.js'),
+    ShiteratorError = require('./errors/error.js');
 
 module.exports = Server = function(options) {
     this._options = utils.merge({
         host : '0.0.0.0',
         port : 6666,
 
-        updateInterval : 50, //60 * 3, // 3 minute
+        updateInterval : 60 * 1, // 3 minute
 
         tracker : {
             name     : null,
@@ -33,12 +35,13 @@ module.exports = Server = function(options) {
     this._httpServer.on('request', this._handleRequest.bind(this));
 
     this._updateInterval = setInterval(this._postErrors.bind(this),
-                                       this._options.updateInterval);
+                                       this._options.updateInterval * 1000);
 }
 
 Server.prototype._postErrors = function() {
-    this._errors.post(this._tracker);
+    var count = this._errors.post(this._tracker);
     this._errors.clear();
+    util.log('Posted ' + count + ' errors to tracker');
 }
 
 Server.prototype._handleRequest = function(request, response) {
@@ -58,7 +61,7 @@ Server.prototype._handleRequest = function(request, response) {
 
         if (Array.isArray(errorsJson) && errorsJson.length) {
             for (var i = 0; i < errorsJson.length; i++) {
-                var error = Error.create(errorsJson[i]);
+                var error = ShiteratorError.create(errorsJson[i]);
                 if (error && this._tracker.isValidError(error)) {
                     this._errors.add(error);
                 }
@@ -68,7 +71,11 @@ Server.prototype._handleRequest = function(request, response) {
 }
 
 Server.prototype.listen = function(port, host) {
-    this._httpServer.listen(port || this._options.port, host || this._options.host);
+    port = port || this._options.port;
+    host = host || this._options.host
+
+    this._httpServer.listen(port, host);
+    util.log('Shiterator started on ' + host + ':' + port);
 }
 
 Server.BUGTRACKS = {

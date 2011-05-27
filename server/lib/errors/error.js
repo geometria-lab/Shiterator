@@ -1,31 +1,31 @@
-module.exports = Error = function(json) {
-    this._setFields(Error, json);
+module.exports = ShiteratorError = function(json) {
+    this._setFields(ShiteratorError, json);
 }
 
-Error.prototype._setFields = function(error, json) {
-    for (var i = 0; i < error.REQUIRED_FIELDS; i++) {
-        this[error.REQUIRED_FIELDS[i]] = json[error.REQUIRED_FIELDS[i]];
+ShiteratorError.prototype._setFields = function(json) {
+    for (var i = 0; i < ShiteratorError.REQUIRED_FIELDS.length; i++) {
+        this[ShiteratorError.REQUIRED_FIELDS[i]] = json[ShiteratorError.REQUIRED_FIELDS[i]];
     }
 
     this.time = new Date();
 }
 
-Error.TYPES = {
-    javaScript   : require('./errors/javascript.js'),
-    phpError     : require('./errors/php_error.js'),
-    phpException : require('./errors/php_exception.js')
+ShiteratorError.TYPES = {
+    javaScript   : require('./javascript.js'),
+    phpError     : require('./php_error.js'),
+    phpException : require('./php_exception.js')
 };
 
-Error.REQUIRED_FIELDS = [ 'subject', 'message', 'line', 'file', 'stack', 'tracker', 'custom' ];
+ShiteratorError.REQUIRED_FIELDS = [ 'subject', 'message', 'line', 'file', 'stack', 'tracker', 'custom' ];
 
-Error.create = function(json) {
+ShiteratorError.create = function(json) {
     var error;
-    if (json.type == undefined || !(error = Error.TYPES[json.type])) {
+    if (json.type == undefined || !(error = ShiteratorError.TYPES[json.type])) {
         return false;
     }
 
-    for (var i = 0; i < error.REQUIRED_FIELDS; i++) {
-        if (!json[error.REQUIRED_FIELDS[i]]) {
+    for (var i = 0; i < ShiteratorError.REQUIRED_FIELDS.length; i++) {
+        if (!json[ShiteratorError.REQUIRED_FIELDS[i]]) {
             return false;
         }
     }

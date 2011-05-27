@@ -2,39 +2,32 @@
 
 namespace Shiterator;
 
-require_once './Error/Abstract.php';
-require_once './Error/Regular.php';
-require_once './Error/Exception.php';
+require_once __DIR__ . '/Error/AbstractError.php';
+require_once __DIR__ . '/Error/Regular.php';
+require_once __DIR__ . '/Error/Exception.php';
 
 class ErrorHandler
 {
     /**
+     * Callback called when error
+     * 
+     * @var callback
+     */
+    public static $callback;
+
+    /**
      * Shiterator server host
      *
-     * @var array
+     * @var string
      */
     public static $host;
 
     /**
      * Shiterator server port
+     *
+     * @var integer
      */
     public static $port;
-
-    protected $_errorTitles = array(
-        E_ERROR             => Error\Error,
-        E_WARNING           => Error\Warning,
-        E_PARSE             => Error\Parse,
-        E_NOTICE            => Error\Notice,
-        E_CORE_ERROR        => Error\CoreError,
-        E_CORE_WARNING      => Error\CoreWarning,
-        E_COMPILE_ERROR     => Error\CompileError,
-        E_COMPILE_WARNING   => Error\CompileWarning,
-        E_USER_ERROR        => Error\UserError,
-        E_USER_WARNING      => Error\UserWarning,
-        E_USER_NOTICE       => Error\UserNotice,
-        E_STRICT            => Error\Strict,
-        E_RECOVERABLE_ERROR => Error\RecoverableError,
-    );
 
     /**
      * Errors
@@ -44,27 +37,37 @@ class ErrorHandler
     protected static $_errors = array();
 
     /**
-     * Callback called when error is raised
+     * Regular error types
      *
-     * @var callback|null
+     * @var array
      */
-    protected static $_callback;
+    protected static $_errorTypes = array(
+        E_ERROR             => 'Error\Error',
+        E_WARNING           => 'Error\Warning',
+        E_PARSE             => 'Error\Parse',
+        E_NOTICE            => 'Notice',
+        E_CORE_ERROR        => 'Error\CoreError',
+        E_CORE_WARNING      => 'Error\CoreWarning',
+        E_COMPILE_ERROR     => 'Error\CompileError',
+        E_COMPILE_WARNING   => 'Error\CompileWarning',
+        E_USER_ERROR        => 'Error\UserError',
+        E_USER_WARNING      => 'Error\UserWarning',
+        E_USER_NOTICE       => 'Error\UserNotice',
+        E_STRICT            => 'Error\Strict',
+        E_RECOVERABLE_ERROR => 'Error\RecoverableError',
+    );
 
     protected static $_shutdownExecuted = false;
 
-    public static function set($host, $port = 6666)
+    public static function set($callback, $host, $port = 6666)
     {
-        self::$host = $host;
-        self::$port = $port;
+        self::$host     = $host;
+        self::$port     = $port;
+        self::$callback = $callback;
 
-        set_error_handler(array(__CLASS__, 'handleRegularError'));
+        set_error_handler(array(__CLASS__, 'handleRegular'));
         set_exception_handler(array(__CLASS__, 'handleException'));
         register_shutdown_function(array(__CLASS__, 'handleShutdown'));
-    }
-
-    public static function setCallback($callback)
-    {
-        self::$_callback = $callback;
     }
 
     public static function addError(Error\AbstractError $error)
@@ -77,158 +80,52 @@ class ErrorHandler
         return self::$_errors;
     }
 
-    public static function saveErrors()
-    {
-        $errors = self::getErrors();
-
-        if (!empty($errors)) {
-            foreach(self::getErrors() as $error) {
-                $errors[] = $error->toArray();
-            }
-
-            self::clearErrors();
-
-            $url = 'http://' . self::$host . ':' . self::$port;
-            $body = escapeshellarg(json_encode($error));
-
-            exec("curl -d '$body' $url &> /dev/null &");
-        }
-    }
-
     public static function clearError()
     {
         self::$_errors = array();
     }
 
-    public static function handleRegularError($errorNumber, $message, $file, $line)
+    public static function saveErrors()
     {
-        if (error_reporting() == 0) {
-            return;
-        }
+        $errors = self::getErrors();
 
-        $error = new Error/Regular($errorNumber, $message, $file, $line);
-
-        if (self::$_callback) {
-            call_user_func(self::$_callback, $error);
-        }
-
-        self::addError($error);
-    }
-
-    public static function handleException(Exception $e)
-    {
-        self::addException($e);
-        self::outputNiceErrorPage();
-    }
-
-
-
-    public static function handleShutdown()
-    {
-        if (self::$_shutdownExecuted) {
-            return;
-        }
-
-        self::$_shutdownExecuted = true;
-
-        $lastError = error_get_last();
-
-        if ($lastError && $lastError['type'] == E_ERROR) {
-            $error = new Geometria_Error_Regular();
-
-            $backtrace = debug_backtrace();
-            array_shift($backtrace);
-
-            $error->setType(E_ERROR)
-                  ->setMessage($lastError['message'])
-                  ->setFile($lastError['file'])
-                  ->setLine($lastError['line'])
-                  ->setStackTrace(self::_getTraceAsString($backtrace));
-
-            unset($backtrace);
-
-            self::addError($error);
-            if (Zend_Debug::getSapi() == 'cli') {
-                echo $error;
-            } else {
-                self::outputNiceErrorPage();
+        if (!empty($errors)) {
+            $errorsData = array();
+            foreach($errors as $error) {
+                $errorsData[] = $error->toArray();
             }
+
+            self::clearError();
+
+            $url = 'http://' . self::$host . ':' . self::$port;
+            $body = escapeshellarg(json_encode($errorsData));
+
+            exec("curl -d $body $url &> /dev/null &");
         }
-
-        self::saveErrors();
-
-        restore_error_handler();
-        restore_exception_handler();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public static function addException(Exception $e)
+    public static function handleRegular($errorNumber, $message, $file, $line)
     {
-        $error = new Geometria_Error_Exception();
-
-        $error->setName(get_class($e))
-              ->setCode($e->getCode())
-              ->setMessage($e->getMessage())
-              ->setFile($e->getFile())
-              ->setLine($e->getLine())
-              //->setStackTrace(self::_getTraceAsString(debug_backtrace()));
-              ->setStackTrace($e->getTraceAsString());
-
-        self::addError($error);
-    }
-
-    public static function handleException(Exception $e)
-    {
-        self::addException($e);
-        self::outputNiceErrorPage();
-    }
-
-    public static function handleRegularError($errno, $message, $file, $line)
-    {
-        if (error_reporting() == 0) {
+        if (error_reporting() == 0 || !isset(self::$_errorTypes[$errorNumber])) {
             return;
         }
 
-        if (in_array($errno, self::$_ignored)) {
-            return false;
+        $className = 'Shiterator\Error\\' . self::$_errorTypes[$errorNumber];
+
+        $error = new $className($message, $file, $line);
+
+        if (call_user_func(self::$callback, $error) !== false) {
+            self::addError($error);
         }
+    }
 
-        $error = new Geometria_Error_Regular();
+    public static function handleException(\Exception $e)
+    {
+        $error = new Error\Exception($e);
 
-        $backtrace = debug_backtrace();
-        array_shift($backtrace);
-
-        $error->setType($errno)
-              ->setMessage($message)
-              ->setFile($file)
-              ->setLine($line)
-              ->setStackTrace(self::_getTraceAsString($backtrace));
-
-        unset($backtrace);
-
-        self::addError($error);
+        if (call_user_func(self::$callback, $error) !== false) {
+            self::addError($error);
+        }
     }
 
     public static function handleShutdown()
@@ -242,156 +139,13 @@ class ErrorHandler
         $lastError = error_get_last();
 
         if ($lastError && $lastError['type'] == E_ERROR) {
-            $error = new Geometria_Error_Regular();
+            $error = new Error\Error($lastError['message'], $lastError['file'], $lastError['line']);
 
-            $backtrace = debug_backtrace();
-            array_shift($backtrace);
-
-            $error->setType(E_ERROR)
-                  ->setMessage($lastError['message'])
-                  ->setFile($lastError['file'])
-                  ->setLine($lastError['line'])
-                  ->setStackTrace(self::_getTraceAsString($backtrace));
-
-            unset($backtrace);
-
-            self::addError($error);
-            if (Zend_Debug::getSapi() == 'cli') {
-                echo $error;
-            } else {
-                self::outputNiceErrorPage();
+            if (call_user_func(self::$callback, $error) !== false) {
+                self::addError($error);
             }
         }
 
         self::saveErrors();
-
-        restore_error_handler();
-        restore_exception_handler();
-    }
-
-    /**
-     * @static
-     * @return void
-     */
-    public static function outputNiceErrorPage()
-    {
-        ob_clean();
-
-        header('HTTP/1.1 500 Internal Server Error');
-        echo file_get_contents(APPLICATION_PATH . '/../public/500.html');
-    }
-
-    /**
-     * @static
-     * @param Exception $exception
-     * @return string
-     */
-    static public function outputException(Exception $exception)
-    {
-        $errorMessage = '<pre>' . get_class($exception) . ': ' . $exception->getMessage() . "<br/>" .
-                            'File: ' . $exception->getFile() . ":" . $exception->getLine() . "<br/>" .
-                            $exception->getTraceAsString() . '</pre>';
-
-        return $errorMessage;
-    }
-
-    /**
-     * @static
-     * @param Geometria_Error_Abstract $error
-     * @param bool $return
-     * @return string
-     */
-    static public function outputError(Geometria_Error_Abstract $error, $return = false)
-    {
-        $errorMessage = $error->getType() . ': ' . $error->getMessage() . "\n";
-        $errorMessage.= 'File: ' . $error->getFile() . ":" . $error->getLine() . "\n";
-        $errorMessage.= self::_getTraceAsString($error->getStackTrace());
-        if ($return) {
-            return $errorMessage;
-        } else {
-            echo $errorMessage;
-        }
-    }
-
-    /**
-     * @static
-     * @param array $backTrace
-     * @return string
-     */
-    protected static function _getTraceAsString(array $backTrace)
-    {
-        $stackTrace = '';
-
-        foreach ($backTrace as $key => $trace) {
-            $fileAndLine = '';
-
-            if (isset($trace['file'])) {
-                $fileAndLine = $trace['file'];
-            }
-
-            if (isset($trace['line'])) {
-                $fileAndLine .= ':' . $trace['line'];
-            }
-
-            $args = '';
-            if (!empty($trace['args'])) {
-                //$args = self::_argumentsToString($trace['args']);
-            }
-
-            $stackTrace .= "#$key {$trace['function']}($args) \n $fileAndLine\n";
-        }
-
-        return $stackTrace;
-    }
-
-    /**
-     * Convert arguments to string
-     *
-     * @param array $arguments
-     * @return string
-     */
-    protected static function _argumentsToString($arguments, $already = 0, $recursive = false)
-    {
-        if (!$already) {
-            $already = 1;
-        }
-
-        $strings = array();
-        foreach($arguments as $name => $value) {
-            $key = !is_integer($name) ? "'$name' => " : '';
-
-            if ($already == 10) {
-                $argument = '...';
-                $strings[] = $key . $argument;
-                break;
-            }
-
-            if (is_object($value)) {
-                $argument = get_class($value);
-            } else if (is_numeric($value)) {
-                $argument = $value;
-            } else if (is_string($value)) {
-                $argument = "'$value'";
-            } else if (is_array($value)) {
-				if (!$recursive) {
-                    $valueString = self::_argumentsToString($value, $already, true);
-                } else {
-                    $valueString = '...';
-                }
-
-                $argument = 'array(' . $valueString . ')';
-            } else if (is_null($value)) {
-                $argument = 'null';
-            } else if ($value === true) {
-                $argument = 'true';
-            } else if ($value === false) {
-                $argument = 'false';
-            }
-
-            $strings[] = $key . $argument;
-            $already++;
-        }
-
-        return implode(', ', $strings);
     }
 }

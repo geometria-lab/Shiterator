@@ -1,8 +1,8 @@
 var util = require('util');
-var Error = require('./error.js');
+var ShiteratorError = require('./error.js');
 
 module.exports = JavaScript = function(json) {
-    this._setFields(Error, json);
+    this._setFields(json);
 }
 
-util.inherits(JavaScript, Error);
+util.inherits(JavaScript, ShiteratorError);

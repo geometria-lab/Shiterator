@@ -22,8 +22,8 @@ module.exports = Redmine = function(options) {
 
 Redmine.prototype.post = function(error, count) {
     var params = {
-            project_id : error.tracker.projectId,
-            tracker_id : error.tracker.trackerId,
+            project_id : error.tracker.project,
+            tracker_id : error.tracker.id,
             subject    : error.subject
         },
         options = {
@@ -55,7 +55,7 @@ Redmine.prototype.post = function(error, count) {
 };
 
 Redmine.prototype.isValidError = function(error) {
-    for (var i = 0; i < Redmine.REQUIRED_FIELDS; i++) {
+    for (var i = 0; i < Redmine.REQUIRED_FIELDS.length; i++) {
         if (!error.tracker[Redmine.REQUIRED_FIELDS[i]]) {
             return false;
         }
@@ -67,9 +67,9 @@ Redmine.prototype.isValidError = function(error) {
 Redmine.prototype._create = function(error, count) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                '<issue>' +
-                   '<project_id>' + error.tracker.projectId + '</project_id>' +
-                   '<tracker_id>' + error.tracker.trackerId + '</tracker_id>' +
-                   '<priority_id>' + error.tracker.priorityId + '</priority_id>' +
+                   '<project_id>' + error.tracker.project + '</project_id>' +
+                   '<tracker_id>' + error.tracker.id + '</tracker_id>' +
+                   '<priority_id>' + error.tracker.priority + '</priority_id>' +
                    '<subject>' + error.subject + '</subject>' +
                    '<description>' + this._getDescription(error) + '</description>' +
                    '<custom_field_values>' +
@@ -100,8 +100,14 @@ Redmine.prototype._update = function(errorId, error, count) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                        '<issue>' +
                            '<skip_journal>1</skip_journal>' +
-                           '<status_id>' + error.tracker.priorityId + '</status_id>' + //3
+                           '<status_id>' + this._options.statusNew + '</status_id>' +
+                           '<project_id>' + error.tracker.project + '</project_id>' +
+                           '<tracker_id>' + error.tracker.id + '</tracker_id>' +
+                           '<priority_id>' + error.tracker.priority + '</priority_id>' +
+                           '<description>' + this._getDescription(error) + '</description>' +
                            '<custom_field_values>' +
+                               '<' + this._options.customFields.file + '>' + error.file + '</' + this._options.customFields.file + '>' +
+                               '<' + this._options.customFields.line + '>' + error.line + '</' + this._options.customFields.line + '>' +
                                '<' + this._options.customFields.count + '>' + count + '</' + this._options.customFields.count + '>' +
                            '</custom_field_values>' +
                        '</issue>',
@@ -126,10 +132,14 @@ Redmine.prototype._update = function(errorId, error, count) {
 Redmine.prototype._getDescription = function(error) {
     var description = "    " + error.message +
            "\n\n\n\n" +
-           "##Stack" +
-           "\n" +
-           "##Info" +
-           "\n\n";
+           "##Stack\n\n";
+
+    var stack = error.stack.split("\n");
+    for (var i = 0; i < stack.length; i++) {
+        description += "    " + stack[i] + "\n";
+    }
+
+    description += "\n\n##Info\n\n";
 
     var info = utils.clone(error.custom);
     info.time = error.time;
@@ -152,4 +162,4 @@ Redmine.prototype._addOptions = function(options) {
     }, options);
 }
 
-Redmine.REQUIRED_FIELDS = ['projectId', 'trackerId', 'priorityId' ];
+Redmine.REQUIRED_FIELDS = ['project', 'id', 'priority' ];
