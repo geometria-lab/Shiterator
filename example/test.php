@@ -12,17 +12,15 @@ Shiterator\ErrorHandler::set(function($error) {
     }
     $error->setTrackerId(6)
           ->setTrackerProject('geometria');
+
+    $error->myCustomField = 'Works';
 }, '127.0.0.1');
 
 $a = $b - 1;
 
 function a()
 {
-    throw new Exception();
-
-
-
+    throw new Exception("adasdasdasads");
 }
-
 
 a();

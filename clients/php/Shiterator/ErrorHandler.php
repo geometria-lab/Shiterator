@@ -42,19 +42,19 @@ class ErrorHandler
      * @var array
      */
     protected static $_errorTypes = array(
-        E_ERROR             => 'Error\Error',
-        E_WARNING           => 'Error\Warning',
-        E_PARSE             => 'Error\Parse',
+        E_ERROR             => 'Error',
+        E_WARNING           => 'Warning',
+        E_PARSE             => 'Parse',
         E_NOTICE            => 'Notice',
-        E_CORE_ERROR        => 'Error\CoreError',
-        E_CORE_WARNING      => 'Error\CoreWarning',
-        E_COMPILE_ERROR     => 'Error\CompileError',
-        E_COMPILE_WARNING   => 'Error\CompileWarning',
-        E_USER_ERROR        => 'Error\UserError',
-        E_USER_WARNING      => 'Error\UserWarning',
-        E_USER_NOTICE       => 'Error\UserNotice',
-        E_STRICT            => 'Error\Strict',
-        E_RECOVERABLE_ERROR => 'Error\RecoverableError',
+        E_CORE_ERROR        => 'CoreError',
+        E_CORE_WARNING      => 'CoreWarning',
+        E_COMPILE_ERROR     => 'CompileError',
+        E_COMPILE_WARNING   => 'CompileWarning',
+        E_USER_ERROR        => 'UserError',
+        E_USER_WARNING      => 'UserWarning',
+        E_USER_NOTICE       => 'UserNotice',
+        E_STRICT            => 'Strict',
+        E_RECOVERABLE_ERROR => 'RecoverableError',
     );
 
     protected static $_shutdownExecuted = false;

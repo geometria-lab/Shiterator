@@ -48,7 +48,7 @@ abstract class Regular extends AbstractError
         }
         unset($backTrace);
 
-        return $string;
+        return $string ? $string : 'not available';
     }
 }
 

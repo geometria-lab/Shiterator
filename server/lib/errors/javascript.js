@@ -1,4 +1,5 @@
 var util = require('util');
+
 var ShiteratorError = require('./error.js');
 
 module.exports = JavaScript = function(json) {
