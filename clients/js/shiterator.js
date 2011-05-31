@@ -1,11 +1,11 @@
 function Shiterator(callback, host, port) {
     this._callback = callback;
-    this._host = host || 'errors';
+    this._host = host;
     this._port = port || 6666;
     this.store = {}; // TODO put this store in cookies or flash store
     this.sendsStore = [];
     this.interval = null;
-};
+}
 
 Shiterator.prototype.start = function(){
     // send errors
@@ -14,8 +14,7 @@ Shiterator.prototype.start = function(){
         intervalTime = 30000;
 
     function addToStore(message, file, line){
-        var referer = window.location,
-            subject = message + ' on ' + file + ':' + line,
+        var subject = message + ' on ' + file + ':' + line,
             data = {
                 'type'      : 'javaScript',
                 'subject'   : subject,
@@ -25,12 +24,13 @@ Shiterator.prototype.start = function(){
                 'tracker'   : null,
                 'file'      : file,
                 'custom'    : {
-                    'referer'   : referer
+                    'url'      : window.location.href,
+                    'referer'  : document.referrer
                 }
             };
 
-        if( !( obj.store.[subject] && obj.sendsStore.[subject] ) && obj.store.length < maxErrors ){
-            obj.store.[subject] = data; 
+        if( !( obj.store[subject] && obj.sendsStore[subject] ) && obj.store.length < maxErrors ){
+            obj.store[subject] = data;
         }
     }
 
@@ -61,15 +61,15 @@ Shiterator.prototype.start = function(){
     window.onerror =  addToStore;
 
     obj.interval = setInterval(postErrors, intervalTime);
-}
+};
 
 Shiterator.prototype.stop = function(){
     var obj = this;
     clearInterval(obj.interval);
-}
+};
 
 Shiterator.prototype.ajax = function(url, method, data, callback){
-    var method = method.toUpperCase() || 'GET';
+    method = method.toUpperCase() || 'GET';
 
     function send(){
         var requestURL = this.url + '/' + (new Date().getTime());
@@ -81,7 +81,6 @@ Shiterator.prototype.ajax = function(url, method, data, callback){
         var request = !!+'\v1' ? new XMLHttpRequest() :
                                  new ActiveXObject("Microsoft.XMLHTTP");
 
-        var self = this;
         request.onreadystatechange = function() {
             requestStateHandler(request);
         };
@@ -119,5 +118,4 @@ Shiterator.prototype.ajax = function(url, method, data, callback){
         }
     }
 
-}
-
+};
