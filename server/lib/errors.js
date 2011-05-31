@@ -7,7 +7,7 @@ module.exports = Errors = function() {
 }
 
 Errors.prototype.add = function(error) {
-	if (!this._types[error.type]) {
+	if (!this.types[error.type]) {
         this.types[error.type] = 0;
         this.typeDuplicates[error.type] = 0;
 	}
