@@ -46,7 +46,7 @@ Server.prototype._postErrors = function() {
 
 	var types = [];
 	for (var type in this._errors.types) {
-		types.push(this._errors.types[type] + ' (' + this._errors.typeDuplicates[type] +') ' + type);
+		types.push(this._errors.types[type] + ' (' + this._errors.typeDuplicates[type] + ') ' + type);
 	}
 
 	util.log('Posted ' + (types.length ? types.join(', ') : '0 errors')  + ' to tracker');

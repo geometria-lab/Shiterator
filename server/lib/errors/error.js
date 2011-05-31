@@ -16,19 +16,16 @@ ShiteratorError.TYPES = {
     phpException : require('./php_exception.js')
 };
 
-ShiteratorError.REQUIRED_FIELDS = [ 'subject', 'message', 'line', 'file', 'stack', 'tracker', 'custom' ];
+ShiteratorError.REQUIRED_FIELDS = [ 'type', 'subject', 'message', 'line', 'file', 'stack', 'tracker', 'custom' ];
 
 ShiteratorError.create = function(json) {
-    var error;
-    if (json.type == undefined || !(error = ShiteratorError.TYPES[json.type])) {
-        return false;
-    }
-
-    for (var i = 0; i < ShiteratorError.REQUIRED_FIELDS.length; i++) {
+	for (var i = 0; i < ShiteratorError.REQUIRED_FIELDS.length; i++) {
         if (!json[ShiteratorError.REQUIRED_FIELDS[i]]) {
             return false;
         }
     }
 
-    return new error(json);
+	var error = ShiteratorError.TYPES[json.type];
+
+	return error ? new error(json) : false;
 }
