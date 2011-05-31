@@ -42,9 +42,20 @@ module.exports = Server = function(options) {
 }
 
 Server.prototype._postErrors = function() {
-    var count = this._errors.post(this._tracker);
+	this._errors.post(this._tracker);
+	
+	var error = 'Posted ';
+	for (var type in this._errors.types) {
+		error += type ""
+	}
+
+	util.log('Posted ' + count + ' errors to tracker');
+	
+	typeDuplicates
+
+
     this._errors.clear();
-    util.log('Posted ' + count + ' errors to tracker');
+    
 }
 
 Server.prototype._handleRequest = function(request, response) {
@@ -62,14 +73,23 @@ Server.prototype._handleRequest = function(request, response) {
 
         }
 
+		var valid = true;
         if (Array.isArray(errorsJson) && errorsJson.length) {
             for (var i = 0; i < errorsJson.length; i++) {
                 var error = ShiteratorError.create(errorsJson[i]);
                 if (error && this._tracker.isValidError(error)) {
                     this._errors.add(error);
-                }
+                } else {
+					valid = false
+				}
             }
-        }
+        } else {
+			valid = false;
+		}
+
+		if (!valid) {
+			util.log('Invalid error format: ' + errorsRaw);
+		}
     }.bind(this));
 }
 
