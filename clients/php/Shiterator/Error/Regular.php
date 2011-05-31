@@ -18,7 +18,7 @@ abstract class Regular extends AbstractError
             'line'    => $line,
             'stack'   => static::_backtraceToString($backTrace),
             'tracker' => array(),
-            'custom'  => static::_getCustom(),
+            'custom'  => static::_getDefaultCustom(),
         );
 
         unset($backTrace);
@@ -41,7 +41,8 @@ abstract class Regular extends AbstractError
 
             $string .= ": {$v['function']}(";
 
-            if ($v['function'] == 'include' || $v['function'] == 'include_once' || $v['function'] == 'require_once' || $v['function'] == 'require') {
+            if (($v['function'] == 'include' || $v['function'] == 'include_once' || $v['function'] == 'require_once' || $v['function'] == 'require') &&
+                isset($v['args']) && isset($v['args'][0])) {
                 $string .= $v['args'][0];
             }
             $string .= ")\n";

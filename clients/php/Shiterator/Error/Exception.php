@@ -25,7 +25,7 @@ class Exception extends AbstractError
             'line'    => $e->getLine(),
             'stack'   => $e->getTraceAsString(),
             'tracker' => array(),
-            'custom'  => self::_getCustom(),
+            'custom'  => static::_getDefaultCustom(),
         );
     }
 

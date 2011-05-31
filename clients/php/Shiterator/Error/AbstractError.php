@@ -17,11 +17,86 @@ abstract class AbstractError
         'custom'  => array(),
     );
 
+    public function isFatal()
+    {
+        return $this->_isFatal;
+    }
+
+    public function getSubject()
+    {
+        return $this->_data['subject'];
+    }
+
+    public function setSubject($subject)
+    {
+        $this->_data['subject'] = $subject;
+
+        return $this;
+    }
+
+    public function getMessage()
+    {
+        return $this->_data['message'];
+    }
+
+    public function setMessage($message)
+    {
+        $this->_data['message'] = $message;
+
+        return $this;
+    }
+
+    public function getFile()
+    {
+        return $this->_data['file'];
+    }
+
+    public function setFile($file)
+    {
+        $this->_data['file'] = $file;
+
+        return $this;
+    }
+
+    public function getLine()
+    {
+        return $this->_data['line'];
+    }
+
+    public function setLine($line)
+    {
+        $this->_data['line'] = $line;
+
+        return $this;
+    }
+
+    public function getStack()
+    {
+        return $this->_data['stack'];
+    }
+
+    public function setStack($stack)
+    {
+        $this->_data['stack'] = $stack;
+
+        return $this;
+    }
+
+    public function getTrackerId()
+    {
+        return $this->_data['tracker']['id'];
+    }
+
     public function setTrackerId($id)
     {
         $this->_data['tracker']['id'] = $id;
 
         return $this;
+    }
+
+    public function getTrackerProject()
+    {
+        return $this->_data['tracker']['project'];
     }
 
     public function setTrackerProject($project)
@@ -31,6 +106,11 @@ abstract class AbstractError
         return $this;
     }
 
+    public function getTrackerPriority()
+    {
+        return $this->_data['tracker']['priority'];
+    }
+
     public function setTrackerPriority($priority)
     {
         $this->_data['tracker']['priority'] = $priority;
@@ -38,9 +118,16 @@ abstract class AbstractError
         return $this;
     }
 
-    public function isFatal()
+    public function getCustom($name)
     {
-        return $this->_isFatal;
+        return $this->_data['custom'][$name];
+    }
+
+    public function setCustom($name, $value)
+    {
+        $this->_data['custom'][$name] = $value;
+
+        return $this;
     }
 
     public function toArray()
@@ -55,15 +142,15 @@ abstract class AbstractError
 
     public function __get($name)
     {
-        return $this->_data['custom'][$name];
+        return $this->getCustom($name);
     }
 
     public function __set($name, $value)
     {
-        $this->_data['custom'][$name] = $value;
+        $this->setCustom($name, $value);
     }
 
-    static protected function _getCustom()
+    static protected function _getDefaultCustom()
     {
         return array(
             'server'     => gethostname(),
