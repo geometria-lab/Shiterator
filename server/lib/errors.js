@@ -16,7 +16,7 @@ Errors.prototype.add = function(error) {
 Errors.prototype.post = function(tracker) {
     var count = 0;
     for (var subject in this._errors) {
-        count += this._errorsCount[subject];
+        count++;
         tracker.post(this._errors[subject], this._errorsCount[subject]);
     }
 
