@@ -3,7 +3,7 @@ module.exports = Errors = function() {
     this._errorsCount = {};
 
 	this.types = {};
-	this.typeDuplicates = {}
+	this.typeDuplicates = {};
 }
 
 Errors.prototype.add = function(error) {
@@ -35,6 +35,9 @@ Errors.prototype.post = function(tracker) {
 Errors.prototype.clear = function() {
     this._errors = {};
     this._errorsCount = {};
+
+	this.types = {};
+	this.typeDuplicates = {};
 
     return this;
 }

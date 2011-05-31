@@ -43,19 +43,14 @@ module.exports = Server = function(options) {
 
 Server.prototype._postErrors = function() {
 	this._errors.post(this._tracker);
-	
-	var error = 'Posted ';
+
+	var types = [];
 	for (var type in this._errors.types) {
-		error += type ""
+		types.push(this._errors.types[type] + ' (' + this._errors.typeDuplicates[type] +') ' + type);
 	}
 
-	util.log('Posted ' + count + ' errors to tracker');
-	
-	typeDuplicates
-
-
+	util.log('Posted ' + (types.length ? types.join(', ') : '0 errors')  + ' to tracker');
     this._errors.clear();
-    
 }
 
 Server.prototype._handleRequest = function(request, response) {
