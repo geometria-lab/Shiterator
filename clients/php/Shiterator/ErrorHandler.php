@@ -119,9 +119,9 @@ class ErrorHandler
         }
     }
 
-    public static function handleException(\Exception $e)
+    public static function handleException(\Exception $e, $isFatal = true)
     {
-        $error = new Error\Exception($e);
+        $error = new Error\Exception($e, $isFatal);
 
         if (call_user_func(self::$callback, $error) !== false) {
             self::addError($error);

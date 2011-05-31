@@ -55,7 +55,7 @@ abstract class Regular extends AbstractError
 class Error extends Regular
 {
     protected static $_title = 'Fatal error';
-    protected static $_isFatal = true;
+    protected $_isFatal = true;
 }
 
 class Warning extends Regular
@@ -65,8 +65,8 @@ class Warning extends Regular
 
 class Parse extends Regular
 {
-    protected static$_title = 'Parse error';
-    protected static $_isFatal = true;
+    protected static $_title = 'Parse error';
+    protected $_isFatal = true;
 }
 
 class Notice extends Regular
@@ -77,7 +77,7 @@ class Notice extends Regular
 class CoreError extends Regular
 {
     protected static $_title = 'Core (startup) fatal error';
-    protected static $_isFatal = true;
+    protected $_isFatal = true;
 }
 
 class CoreWarning extends Regular
@@ -88,7 +88,7 @@ class CoreWarning extends Regular
 class CompileError extends Regular
 {
     protected static $_title = 'Compile-time fatal error';
-    protected static $_isFatal = true;
+    protected $_isFatal = true;
 }
 
 class CompileWarning extends Regular
@@ -99,7 +99,7 @@ class CompileWarning extends Regular
 class UserError extends Regular
 {
     protected static $_title = 'User error';
-    protected static $_isFatal = true;
+    protected $_isFatal = true;
 }
 
 class UserWarning extends Regular
@@ -120,5 +120,5 @@ class Strict extends Regular
 class RecoverableError extends Regular
 {
     protected static $_title = 'Catchable fatal error';
-    protected static $_isFatal = true;
+    protected $_isFatal = true;
 }

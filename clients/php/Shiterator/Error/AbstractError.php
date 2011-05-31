@@ -4,7 +4,7 @@ namespace Shiterator\Error;
 
 abstract class AbstractError
 {
-    protected static $_isFatal = false;
+    protected $_isFatal = false;
 
     protected $_data = array(
         'type'    => null,
@@ -40,7 +40,7 @@ abstract class AbstractError
 
     public function isFatal()
     {
-        return static::$_isFatal;
+        return $this->_isFatal;
     }
 
     public function toArray()

@@ -4,12 +4,18 @@ namespace Shiterator\Error;
 
 class Exception extends AbstractError
 {
-    protected static $_isFatal = true;
+    protected $_isFatal = true;
 
+    /**
+     * Exception
+     *
+     * @var \Exception
+     */
     protected $_e;
 
-    public function __construct(\Exception $e)
+    public function __construct(\Exception $e, $isFatal = true)
     {
+        $this->_isFatal = $isFatal;
         $this->_e = $e;
         $this->_data = array(
             'type'    => 'phpException',
