@@ -67,7 +67,7 @@ Redmine.prototype._create = function(error, count) {
                    '<subject><![CDATA[' + error.subject + ']]></subject>' +
                    '<description><![CDATA[' + this._getDescription(error) + ']]></description>' +
                    '<custom_field_values>' +
-                       '<' + this._options.customFields.file + '>' + error.file + '</' + this._options.customFields.file + '>' +
+                       '<' + this._options.customFields.file + '><![CDATA[' + error.file + ']]></' + this._options.customFields.file + '>' +
                        '<' + this._options.customFields.line + '>' + error.line + '</' + this._options.customFields.line + '>' +
                        '<' + this._options.customFields.count + '>' + count + '</' + this._options.customFields.count + '>' +
                    '</custom_field_values>' +
