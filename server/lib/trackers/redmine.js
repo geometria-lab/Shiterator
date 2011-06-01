@@ -43,6 +43,7 @@ Redmine.prototype.post = function(error, count) {
                     countNode   = element.selectNodes('/issues/issue[1]/custom_fields/custom_field[@id=' + this._options.customFields.count + ']/text()')[0];
             } catch (e) {
                 util.log("Can't parse Redmine issues by " + options.path + '. Response code: ' + response.statusCode + '. Response body: ' + data);
+                return;
             }
 
             if (errorIdNode) {
