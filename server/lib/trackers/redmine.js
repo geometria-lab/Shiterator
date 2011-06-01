@@ -37,9 +37,13 @@ Redmine.prototype.post = function(error, count) {
             data += chunk;
         });
         response.on('end', function() {
-            var element     = xml.parseFromString(data).documentElement,
-                errorIdNode = element.selectNodes('/issues/issue[1]/id/text()')[0],
-                countNode   = element.selectNodes('/issues/issue[1]/custom_fields/custom_field[@id=' + this._options.customFields.count + ']/text()')[0];
+            try {
+                var element     = xml.parseFromString(data).documentElement,
+                    errorIdNode = element.selectNodes('/issues/issue[1]/id/text()')[0],
+                    countNode   = element.selectNodes('/issues/issue[1]/custom_fields/custom_field[@id=' + this._options.customFields.count + ']/text()')[0];
+            } catch (e) {
+                util.log("Can't parse Redmine issues by " + options.path + '. Response code: ' + response.statusCode + '. Response body: ' + data);
+            }
 
             if (errorIdNode) {
                 var errorId      = errorIdNode.nodeValue,
@@ -79,7 +83,7 @@ Redmine.prototype._create = function(error, count) {
 
     var request = http.request(this._addOptions(options), function(response) {
         if (response.statusCode != 201) {
-            util.log("Can't create Redmine issue: " + util.inspect(error));
+            util.log("Can't create Redmine issue. Response code: " + response.statusCode + '. Error: ' + util.inspect(error));
         }
     });
     request.write(body);
@@ -112,7 +116,7 @@ Redmine.prototype._update = function(errorId, error, count) {
 
     var request = http.request(this._addOptions(options), function(response) {
         if (response.statusCode != 200) {
-            util.log("Can't update Redmine issue: " + util.inspect(error));
+            util.log("Can't create Redmine issue. Response code: " + response.statusCode + '. Error: ' + util.inspect(error));
         }
     });
     request.write(body);
