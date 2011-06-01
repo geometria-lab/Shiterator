@@ -41,18 +41,17 @@ Redmine.prototype.post = function(error, count) {
                 var element     = xml.parseFromString(data).documentElement,
                     errorIdNode = element.selectNodes('/issues/issue[1]/id/text()')[0],
                     countNode   = element.selectNodes('/issues/issue[1]/custom_fields/custom_field[@id=' + this._options.customFields.count + ']/text()')[0];
+
+                if (errorIdNode) {
+                    var errorId      = errorIdNode.nodeValue,
+                        alreadyCount = parseInt(countNode.nodeValue);
+
+                    this._update(errorId, error, alreadyCount + count);
+                } else {
+                    this._create(error, count);
+                }
             } catch (e) {
                 util.log("Can't parse Redmine issues by " + options.path + '. Response code: ' + response.statusCode + '. Response body: ' + data);
-                return;
-            }
-
-            if (errorIdNode) {
-                var errorId      = errorIdNode.nodeValue,
-                    alreadyCount = parseInt(countNode.nodeValue);
-
-                this._update(errorId, error, alreadyCount + count);
-            } else {
-                this._create(error, count);
             }
         }.bind(this));
     }.bind(this));
