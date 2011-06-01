@@ -64,8 +64,8 @@ Redmine.prototype._create = function(error, count) {
                    '<project_id>' + error.tracker.project + '</project_id>' +
                    '<tracker_id>' + error.tracker.id + '</tracker_id>' +
                    '<priority_id>' + error.tracker.priority + '</priority_id>' +
-                   '<subject>' + error.subject + '</subject>' +
-                   '<description>' + this._getDescription(error) + '</description>' +
+                   '<subject><![CDATA[' + error.subject + ']]></subject>' +
+                   '<description><![CDATA[' + this._getDescription(error) + ']]></description>' +
                    '<custom_field_values>' +
                        '<' + this._options.customFields.file + '>' + error.file + '</' + this._options.customFields.file + '>' +
                        '<' + this._options.customFields.line + '>' + error.line + '</' + this._options.customFields.line + '>' +
@@ -98,7 +98,7 @@ Redmine.prototype._update = function(errorId, error, count) {
                            '<project_id>' + error.tracker.project + '</project_id>' +
                            '<tracker_id>' + error.tracker.id + '</tracker_id>' +
                            '<priority_id>' + error.tracker.priority + '</priority_id>' +
-                           '<description>' + this._getDescription(error) + '</description>' +
+                           '<description><![CDATA[' + this._getDescription(error) + ']]></description>' +
                            '<custom_field_values>' +
                                '<' + this._options.customFields.file + '>' + error.file + '</' + this._options.customFields.file + '>' +
                                '<' + this._options.customFields.line + '>' + error.line + '</' + this._options.customFields.line + '>' +
