@@ -94,7 +94,7 @@ Redmine.prototype._create = function(error, count) {
                 data += chunk;
             });
             response.on('end', function() {
-                util.log("Can't create Redmine issue. Response code: " + response.statusCode + '. Response body: ' + data + '. Error: ' + util.inspect(error));
+                util.log("Can't create Redmine issue. Response code: " + response.statusCode + '. Response body: ' + data + '. Error: ' + body);
             });
         }
     });
@@ -133,7 +133,7 @@ Redmine.prototype._update = function(errorId, error, count, skipJournal) {
                 data += chunk;
             });
             response.on('end', function() {
-                util.log("Can't update Redmine issue. Response code: " + response.statusCode + '. Response body: ' + data + '. Error: ' + util.inspect(error));
+                util.log("Can't update Redmine issue. Response code: " + response.statusCode + '. Response body: ' + data + '. Error: ' + body);
             });
         }
     });
