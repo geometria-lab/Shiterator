@@ -88,15 +88,15 @@ Redmine.prototype._create = function(error, count) {
         };
 
     var request = http.request(this._addOptions(options), function(response) {
-        var data = '';
-        response.on('data', function(chunk) {
-            data += chunk;
-        });
-        response.on('end', function() {
-            if (response.statusCode != 201) {
+        if (response.statusCode != 201) {
+            var data = '';
+            response.on('data', function(chunk) {
+                data += chunk;
+            });
+            response.on('end', function() {
                 util.log("Can't create Redmine issue. Response code: " + response.statusCode + '. Response body: ' + data + '. Error: ' + util.inspect(error));
-            }
-        });
+            });
+        }
     });
     request.write(body);
     request.end();
@@ -127,15 +127,15 @@ Redmine.prototype._update = function(errorId, error, count, skipJournal) {
                 };
 
     var request = http.request(this._addOptions(options), function(response) {
-        var data = '';
-        response.on('data', function(chunk) {
-            data += chunk;
-        });
-        response.on('end', function() {
-            if (response.statusCode != 201) {
+        if (response.statusCode != 200) {
+            var data = '';
+            response.on('data', function(chunk) {
+                data += chunk;
+            });
+            response.on('end', function() {
                 util.log("Can't update Redmine issue. Response code: " + response.statusCode + '. Response body: ' + data + '. Error: ' + util.inspect(error));
-            }
-        });
+            });
+        }
     });
     request.write(body);
     request.end();
