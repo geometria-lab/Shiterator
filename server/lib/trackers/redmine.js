@@ -12,6 +12,8 @@ module.exports = Redmine = function(options) {
         login     : null,
         password  : null,
 
+        statusNew : null,
+
         customFields : {
             count : null,
             line  : null,
@@ -21,6 +23,8 @@ module.exports = Redmine = function(options) {
 }
 
 Redmine.prototype.post = function(error, count) {
+    count = count || 1;
+
     var params = {
             project_id : error.tracker.project,
             tracker_id : error.tracker.id,
@@ -40,13 +44,20 @@ Redmine.prototype.post = function(error, count) {
             try {
                 var element     = xml.parseFromString(data).documentElement,
                     errorIdNode = element.selectNodes('/issues/issue[1]/id/text()')[0],
-                    countNode   = element.selectNodes('/issues/issue[1]/custom_fields/custom_field[@id=' + this._options.customFields.count + ']/value/text()')[0];
+                    countNode   = element.selectNodes('/issues/issue[1]/custom_fields/custom_field[@id=' + this._options.customFields.count + ']/value/text()')[0],
+                    statusNode  = element.selectNodes('/issues/issue[1]/status/@id');
+
+                util.log(statusNode.nodeValue);
+
+                process.exit();
+
 
                 if (errorIdNode) {
                     var errorId      = errorIdNode.nodeValue,
-                        alreadyCount = parseInt(countNode.nodeValue);
+                        alreadyCount = parseInt(countNode.nodeValue),
+                        status       = parseInt(statusNode.nodeValue);
 
-                    this._update(errorId, error, alreadyCount + count);
+                    this._update(errorId, error, alreadyCount + count, status == this._options.statusNew);
                 } else {
                     this._create(error, count);
                 }
@@ -61,15 +72,15 @@ Redmine.prototype.post = function(error, count) {
 Redmine.prototype._create = function(error, count) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                '<issue>' +
-                   '<project_id>' + error.tracker.project + '</project_id>' +
-                   '<tracker_id>' + error.tracker.id + '</tracker_id>' +
-                   '<priority_id>' + error.tracker.priority + '</priority_id>' +
+                   '<project_id><![CDATA[' + error.tracker.project + ']]></project_id>' +
+                   '<tracker_id><![CDATA[' + error.tracker.id + ']]></tracker_id>' +
+                   '<priority_id><![CDATA[' + error.tracker.priority + ']]></priority_id>' +
                    '<subject><![CDATA[' + error.subject + ']]></subject>' +
                    '<description><![CDATA[' + this._getDescription(error) + ']]></description>' +
                    '<custom_field_values>' +
                        '<' + this._options.customFields.file + '><![CDATA[' + error.file + ']]></' + this._options.customFields.file + '>' +
-                       '<' + this._options.customFields.line + '>' + error.line + '</' + this._options.customFields.line + '>' +
-                       '<' + this._options.customFields.count + '>' + count + '</' + this._options.customFields.count + '>' +
+                       '<' + this._options.customFields.line + '><![CDATA[' + error.line + ']]></' + this._options.customFields.line + '>' +
+                       '<' + this._options.customFields.count + '><![CDATA[' + count + ']]></' + this._options.customFields.count + '>' +
                    '</custom_field_values>' +
                '</issue>',
         options = {
@@ -82,27 +93,33 @@ Redmine.prototype._create = function(error, count) {
         };
 
     var request = http.request(this._addOptions(options), function(response) {
-        if (response.statusCode != 201) {
-            util.log("Can't create Redmine issue. Response code: " + response.statusCode + '. Error: ' + util.inspect(error));
-        }
+        var data = '';
+        response.on('data', function(chunk) {
+            data += chunk;
+        });
+        response.on('end', function() {
+            if (response.statusCode != 201) {
+                util.log("Can't create Redmine issue. Response code: " + response.statusCode + '. Response body: ' + data + '. Error: ' + util.inspect(error));
+            }
+        });
     });
     request.write(body);
     request.end();
 }
 
-Redmine.prototype._update = function(errorId, error, count) {
+Redmine.prototype._update = function(errorId, error, count, skipJournal) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                        '<issue>' +
-                           '<skip_journal>1</skip_journal>' +
-                           '<status_id>' + this._options.statusNew + '</status_id>' +
-                           '<project_id>' + error.tracker.project + '</project_id>' +
-                           '<tracker_id>' + error.tracker.id + '</tracker_id>' +
-                           '<priority_id>' + error.tracker.priority + '</priority_id>' +
+                           (skipJournal ? '<skip_journal>1</skip_journal>' : '') +
+                           '<status_id><![CDATA[' + this._options.statusNew + ']]></status_id>' +
+                           '<project_id><![CDATA[' + error.tracker.project + ']]></project_id>' +
+                           '<tracker_id><![CDATA[' + error.tracker.id + ']]></tracker_id>' +
+                           '<priority_id><![CDATA[' + error.tracker.priority + ']]></priority_id>' +
                            '<description><![CDATA[' + this._getDescription(error) + ']]></description>' +
                            '<custom_field_values>' +
-                               '<' + this._options.customFields.file + '>' + error.file + '</' + this._options.customFields.file + '>' +
-                               '<' + this._options.customFields.line + '>' + error.line + '</' + this._options.customFields.line + '>' +
-                               '<' + this._options.customFields.count + '>' + count + '</' + this._options.customFields.count + '>' +
+                               '<' + this._options.customFields.file + '><![CDATA[' + error.file + ']]></' + this._options.customFields.file + '>' +
+                               '<' + this._options.customFields.line + '><![CDATA[' + error.line + ']]></' + this._options.customFields.line + '>' +
+                               '<' + this._options.customFields.count + '><![CDATA[' + count + ']]></' + this._options.customFields.count + '>' +
                            '</custom_field_values>' +
                        '</issue>',
                 options = {
@@ -115,9 +132,15 @@ Redmine.prototype._update = function(errorId, error, count) {
                 };
 
     var request = http.request(this._addOptions(options), function(response) {
-        if (response.statusCode != 200) {
-            util.log("Can't create Redmine issue. Response code: " + response.statusCode + '. Error: ' + util.inspect(error));
-        }
+        var data = '';
+        response.on('data', function(chunk) {
+            data += chunk;
+        });
+        response.on('end', function() {
+            if (response.statusCode != 201) {
+                util.log("Can't update Redmine issue. Response code: " + response.statusCode + '. Response body: ' + data + '. Error: ' + util.inspect(error));
+            }
+        });
     });
     request.write(body);
     request.end();
