@@ -41,7 +41,7 @@ Redmine.prototype.post = function(error, count) {
             data += chunk;
         });
         response.on('end', function() {
-            try {
+            //try {
                 var element     = xml.parseFromString(data).documentElement,
                     errorIdNode = element.selectNodes('/issues/issue[1]/id/text()')[0],
                     countNode   = element.selectNodes('/issues/issue[1]/custom_fields/custom_field[@id=' + this._options.customFields.count + ']/value/text()')[0],
@@ -61,9 +61,9 @@ Redmine.prototype.post = function(error, count) {
                 } else {
                     this._create(error, count);
                 }
-            } catch (e) {
-                util.log("Can't parse Redmine issues by " + options.path + '. Response code: ' + response.statusCode + '. Response body: ' + data);
-            }
+            //} catch (e) {
+            //    util.log("Can't parse Redmine issues by " + options.path + '. Response code: ' + response.statusCode + '. Response body: ' + data);
+            //}
         }.bind(this));
     }.bind(this));
     request.end();
