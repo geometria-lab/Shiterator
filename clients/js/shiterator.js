@@ -16,14 +16,14 @@ Shiterator.prototype.start = function(){
 
     function addToStore(message, file, line){
         var subject = message + ' on ' + file + ':' + line,
-            id = 'error' + (subject.length + line),
+            id = 'error' + ( subject.length + (line * 1000) ),
             data = {
                 'type'      : 'javaScript',
                 'subject'   : subject,
                 'message'   : message,
                 'line'      : line,
                 'stack'     : 'not available',
-                'tracker'   : null,
+                'tracker'   : {},
                 'file'      : file,
                 'custom'    : {
                     'url'      : window.location.href,
@@ -64,8 +64,9 @@ Shiterator.prototype.start = function(){
     function postErrorsAction(data){
         var url = ( obj._host.indexOf('http://') == -1 ? 'http://' : '' ) + obj._host + ( (obj._port && obj._port.length) ? (':' + obj._port) : '' ),
             json = obj.toJSON(data);
-        obj.ajax(url, 'POST', json);
+        //obj.ajax(url, 'POST', json);
         setSendData();
+        obj.post(url, json);
     }
 
     function postErrors(){
@@ -170,54 +171,97 @@ Shiterator.prototype.toJSON = function(o){
     }
 }
 
-Shiterator.prototype.ajax = function(url, method, data, callback){
-    method = method.toUpperCase() || 'GET';
+Shiterator.prototype.post = function(url, data){
+    var obj = this,
+        form = obj._postForm ? obj._postForm : document.createElement('form'),
+        input = document.createElement('input'),
+        oldInput = form.getElementsByTagName('input')[0],
+        iframeId = obj._postIframeId ? obj._postIframeId : 'errorFrame' + new Date().getTime(),
+        box = document.createElement('div'),
+        iframeHtml = '<iframe id="' + iframeId + '" name="' + iframeId + '"></iframe>',
+        wraper = document.body;
 
-    function send(){
-        var requestURL = url;
-
-        if (request) {
-            request.abort();
-        }
-
-        var request = !!+'\v1' ? new XMLHttpRequest() :
-                                 new ActiveXObject("Microsoft.XMLHTTP");
-
-        request.onreadystatechange = function() {
-            requestStateHandler(request);
-        };
-
-        if (method === 'GET' && data) {
-            requestURL +=
-                (requestURL.indexOf('?') === -1 ? '?' : '&') + data;
-        }
-
-        request.open(method, encodeURI(requestURL), true);
-
-        var sendData = null;
-        if (method !== 'GET') {
-            sendData = data;
-            request.setRequestHeader
-                ('Content-Type', 'application/x-www-form-urlencoded');
-        }
-
-        request.send(sendData);
-    }
-    send();
-
-    function requestStateHandler(request){
-        if (request.readyState === 4) {
-            if(callback){
-                if (request.status === 200) {
-                    callback(request.responseText);
-                } else {
-                    callback('error');
-                }
-            }
-            request.onreadystatechange = null;
-            request.abort();
-            request = null;
-        }
+    with(box){
+        innerHTML = iframeHtml;
+        style.display = 'none';
     }
 
-};
+    if(oldInput){
+        form.removeChild(oldInput);
+    }
+
+    with(form){ $.empty
+        setAttribute('action', url);
+        style.display = 'none';
+        setAttribute('method', 'post');
+        setAttribute('target', iframeId);
+    }
+
+    with(input){
+        setAttribute('value', data);
+        setAttribute('name', 'error');
+        setAttribute('type', 'hidden');
+    }
+
+    if( !obj._postForm ){
+        obj._postForm = form;
+        obj._postIframeId = iframeId;
+        box.appendChild(form);
+        wraper.appendChild(box);
+    }
+    form.appendChild(input);
+    form.submit();
+
+}
+
+//Shiterator.prototype.ajax = function(url, method, data, callback){
+//    method = method.toUpperCase() || 'GET';
+//
+//    function send(){
+//        var requestURL = url;
+//
+//        if (request) {
+//            request.abort();
+//        }
+//
+//        var request = !!+'\v1' ? new XMLHttpRequest() :
+//                                 new ActiveXObject("Microsoft.XMLHTTP");
+//
+//        request.onreadystatechange = function() {
+//            requestStateHandler(request);
+//        };
+//
+//        if (method === 'GET' && data) {
+//            requestURL +=
+//                (requestURL.indexOf('?') === -1 ? '?' : '&') + data;
+//        }
+//
+//        request.open(method, encodeURI(requestURL), true);
+//
+//        var sendData = null;
+//        if (method !== 'GET') {
+//            sendData = data;
+//            request.setRequestHeader
+//                ('Content-Type', 'application/x-www-form-urlencoded');
+//        }
+//
+//        request.send(sendData);
+//    }
+//    send();
+//
+//    function requestStateHandler(request){
+//        if (request.readyState === 4) {
+//            if(callback){
+//                if (request.status === 200) {
+//                    callback(request.responseText);
+//                } else {
+//                    callback('error');
+//                }
+//            }
+//            request.onreadystatechange = null;
+//            request.abort();
+//            request = null;
+//        }
+//    }
+//
+//};
