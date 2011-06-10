@@ -8,12 +8,18 @@
     <script type="text/javascript" src="../clients/js/lib/shiterator.js"></script>
 </head>
 <body>
-    test
+    test1
     <script type="text/javascript">
-        var shiterator = new Shiterator({
-            callback: function() {
-                console.log(arguments);
-            }
+        var shiterator = new Shiterator(function(error) {
+               error.tracker = {
+                    priority: 2,
+                    id : 8,
+                    project : 4
+               };
+                //console.log(arguments);
+            }, {
+            host: '127.0.0.1',
+//            ignoreErrors: false
         });
 
         shiterator.start();
