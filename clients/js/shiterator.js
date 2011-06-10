@@ -1,267 +1,1 @@
-function Shiterator(callback, host, port) {
-    this._callback = callback;
-    this._host = host;
-    this._port = port;
-    this._store = {}; // TODO put this store in cookies or flash store
-    this._sendsStore = [];
-    this._interval = null;
-}
-
-Shiterator.prototype.start = function(){
-    // send errors
-    var obj = this,
-        maxErrors = 10,
-        intervalTime = 30000,
-        errorCount = 0;
-
-    function addToStore(message, file, line){
-        var subject = message + ' on ' + file + ':' + line,
-            id = 'error' + ( subject.length + (line * 1000) ),
-            data = {
-                'type'      : 'javaScript',
-                'subject'   : subject,
-                'message'   : message,
-                'line'      : line,
-                'stack'     : 'not available',
-                'tracker'   : {},
-                'file'      : file,
-                'custom'    : {
-                    'url'      : window.location.href,
-                    'referer'  : document.referrer
-                }
-            };
-
-        obj._callback(data);
-
-        if( !( obj._store[id] && obj._sendsStore[id] ) && errorCount < maxErrors ){
-            obj._store[id] = data;
-            errorCount++;
-        }
-    }
-
-    function getNoSendData(){
-        var store = obj._store,
-            sends = obj._sendsStore,
-            res = [];
-        for(var key in store){
-            if( sends.indexOf(key) == -1 ){
-                res.push( store[key] );
-            }
-        }
-        return res;
-    }
-
-    function setSendData(){
-        var store = obj._store,
-            sends = obj._sendsStore;
-        for(var key in store){
-            if( sends.indexOf(key) == -1 ){
-                sends.push(key);
-            }
-        }
-    }
-
-    function postErrorsAction(data){
-        var url = ( obj._host.indexOf('http://') == -1 ? 'http://' : '' ) + obj._host + ( (obj._port && obj._port.length) ? (':' + obj._port) : '' ),
-            json = obj.toJSON(data);
-        //obj.ajax(url, 'POST', json);
-        setSendData();
-        obj.post(url, json);
-    }
-
-    function postErrors(){
-        var data = getNoSendData();
-        if(data.length){
-            postErrorsAction(data);
-        }
-    }
-
-    window.onerror =  addToStore;
-
-    obj._interval = setInterval(postErrors, intervalTime);
-};
-
-Shiterator.prototype.stop = function(){
-    var obj = this;
-    clearInterval(obj._interval);
-    window.onerror = function(){};
-};
-
-Shiterator.prototype.toJSON = function(o){
-    if (typeof(JSON) == 'object' && JSON.stringify)
-        return JSON.stringify(o);
-
-    var type = typeof(o);
-
-    if (o === null)
-        return "null";
-
-    if (type == "undefined")
-        return undefined;
-
-    if (type == "number" || type == "boolean")
-        return o + "";
-
-    if (type == "string")
-        return $.quoteString(o);
-
-    if (type == 'object')
-    {
-        if (typeof o.toJSON == "function")
-            return $.toJSON( o.toJSON() );
-
-        if (o.constructor === Date)
-        {
-            var month = o.getUTCMonth() + 1;
-            if (month < 10) month = '0' + month;
-
-            var day = o.getUTCDate();
-            if (day < 10) day = '0' + day;
-
-            var year = o.getUTCFullYear();
-
-            var hours = o.getUTCHours();
-            if (hours < 10) hours = '0' + hours;
-
-            var minutes = o.getUTCMinutes();
-            if (minutes < 10) minutes = '0' + minutes;
-
-            var seconds = o.getUTCSeconds();
-            if (seconds < 10) seconds = '0' + seconds;
-
-            var milli = o.getUTCMilliseconds();
-            if (milli < 100) milli = '0' + milli;
-            if (milli < 10) milli = '0' + milli;
-
-            return '"' + year + '-' + month + '-' + day + 'T' +
-                         hours + ':' + minutes + ':' + seconds +
-                         '.' + milli + 'Z"';
-        }
-
-        if (o.constructor === Array)
-        {
-            var ret = [];
-            for (var i = 0; i < o.length; i++)
-                ret.push( $.toJSON(o[i]) || "null" );
-
-            return "[" + ret.join(",") + "]";
-        }
-
-        var pairs = [];
-        for (var k in o) {
-            var name;
-            var type = typeof k;
-
-            if (type == "number")
-                name = '"' + k + '"';
-            else if (type == "string")
-                name = $.quoteString(k);
-            else
-                continue;  //skip non-string or number keys
-
-            if (typeof o[k] == "function")
-                continue;  //skip pairs where the value is a function.
-
-            var val = $.toJSON(o[k]);
-
-            pairs.push(name + ":" + val);
-        }
-
-        return "{" + pairs.join(", ") + "}";
-    }
-}
-
-Shiterator.prototype.post = function(url, data){
-    var obj = this,
-        form = obj._postForm ? obj._postForm : document.createElement('form'),
-        input = document.createElement('input'),
-        oldInput = form.getElementsByTagName('input')[0],
-        iframeId = obj._postIframeId ? obj._postIframeId : 'errorFrame' + new Date().getTime(),
-        box = document.createElement('div'),
-        iframeHtml = '<iframe id="' + iframeId + '" name="' + iframeId + '"></iframe>',
-        wraper = document.body;
-
-    with(box){
-        innerHTML = iframeHtml;
-        style.display = 'none';
-    }
-
-    if(oldInput){
-        form.removeChild(oldInput);
-    }
-
-    with(form){ $.empty
-        setAttribute('action', url);
-        style.display = 'none';
-        setAttribute('method', 'post');
-        setAttribute('target', iframeId);
-    }
-
-    with(input){
-        setAttribute('value', data);
-        setAttribute('name', 'error');
-        setAttribute('type', 'hidden');
-    }
-
-    if( !obj._postForm ){
-        obj._postForm = form;
-        obj._postIframeId = iframeId;
-        box.appendChild(form);
-        wraper.appendChild(box);
-    }
-    form.appendChild(input);
-    form.submit();
-
-}
-
-//Shiterator.prototype.ajax = function(url, method, data, callback){
-//    method = method.toUpperCase() || 'GET';
-//
-//    function send(){
-//        var requestURL = url;
-//
-//        if (request) {
-//            request.abort();
-//        }
-//
-//        var request = !!+'\v1' ? new XMLHttpRequest() :
-//                                 new ActiveXObject("Microsoft.XMLHTTP");
-//
-//        request.onreadystatechange = function() {
-//            requestStateHandler(request);
-//        };
-//
-//        if (method === 'GET' && data) {
-//            requestURL +=
-//                (requestURL.indexOf('?') === -1 ? '?' : '&') + data;
-//        }
-//
-//        request.open(method, encodeURI(requestURL), true);
-//
-//        var sendData = null;
-//        if (method !== 'GET') {
-//            sendData = data;
-//            request.setRequestHeader
-//                ('Content-Type', 'application/x-www-form-urlencoded');
-//        }
-//
-//        request.send(sendData);
-//    }
-//    send();
-//
-//    function requestStateHandler(request){
-//        if (request.readyState === 4) {
-//            if(callback){
-//                if (request.status === 200) {
-//                    callback(request.responseText);
-//                } else {
-//                    callback('error');
-//                }
-//            }
-//            request.onreadystatechange = null;
-//            request.abort();
-//            request = null;
-//        }
-//    }
-//
-//};
+(function() {    Shiterator = function(options) {        this._options = merge({            callback: noop,            host: null,                             port: 6666,            postingPeriod: 1,          // in seconds            forgetErrorsAfter: 0,       // in days, 0 means "never"            errorToData: this.__convertErrorToData,            errorsLimit: 10,            ignoreErrors: true        }, options);        this.__ShiteratorInit();    };    Shiterator.prototype.__ShiteratorInit = function() {        this._started = false;        this.__previousErrorHandler = window.onerror || null;        this.__errorsToPost = [];        this.__knownErrors = new ErrorStorage(this._options.forgetErrorsAfter);        this.__errorsCount = 0;        this.__postErrorTimeout = null;        if (typeof this._options.errorToData === 'function') {            this.__convertErrorToData = this._options.errorToData;        }        // url        this.__url = this.__getFullUrl();        // form        this.__form = null;        this.__input = null;        this.__iframe = null;    };    Shiterator.prototype.__getFullUrl = function() {        if (this._options.host) {            return (this._options.host.indexOf('http://') !== 0 ? 'http://' : '') +                    this._options.host +                   (this._options.port ? ':' + this._options.port : '');        }        return null;    };    Shiterator.prototype.__convertErrorToData = function(message, file, line) {        return {            'type'      : 'JavaScript',            'subject'   : message + ' on ' + file + ':' + line,            'message'   : message,            'line'      : line,            'stack'     : 'not available',            'tracker'   : {},            'file'      : file,            'custom'    : {                'url'      : document.location.href,                'referer'  : document.referrer            }        };    };    Shiterator.prototype.__errorHandler = function(message, file, line) {        var id = crc32(message + ' on ' + file + ':' + line);        var self = this;        console.log(message, file, line, id);        if (this.__errorsCount < this._options.errorsLimit && !this.__knownErrors.has(id)) {            this.__knownErrors.put(id);            this.__errorsToPost.push(this.__convertErrorToData(message, file, line));            this.__errorsCount++;            this._options.callback.apply(window, arguments);            if (!this.__postErrorTimeout) {                this.__postErrorTimeout = setTimeout(function() {                    debugger;                    self.__submitErrors();                }, this._options.postingPeriod * 1000);            }        }        return this._options.ignoreErrors;    };    Shiterator.prototype.__submitErrors = function() {        if (!this.__url) {            return;        }        if (!this.__form) {            // create form & iframe            var box = document.createElement('div');            box.style.display = 'none';            box.innerHTML = '<form action="' + this.__url + '" method="post" target="shiterator-error-frame">' +                            "<input type='hidden' name='error' value=''>" +                            '</form>' +                            '<iframe id="shiterator-error-frame" name="shiterator-error-frame"></iframe>';            document.body.appendChild(box);            this.__form = box.getElementsByTagName('form')[0];            this.__iframe = box.getElementsByTagName('iframe')[0];            this.__input = box.getElementsByTagName('input')[0];        }        this.__input.setAttribute('value', JSONToString(this.__errorsToPost));        this.__iframe.onload = function() {            this.__errorsToPost.length = 0;        };        this.__form.submit();    };    Shiterator.prototype.start = function () {        if (!this._started) {            var self = this;            window.onerror = function() {                return self.__errorHandler.apply(self, arguments);            };            this._started = true;        }    };    Shiterator.prototype.stop = function () {        if (this._started) {            window.onerror = this.__previousErrorHandler;            this._started = false;        }    };    var ErrorStorage = function(expireAfterDays) {        this.__storage;        this._expires;        this.__retrieveFromCookies(expireAfterDays);        this.__ErrorStorageInit();    };    ErrorStorage.prototype.__ErrorStorageInit = function() {    };    ErrorStorage.prototype.__retrieveFromCookies = function(expireAfterDays) {        this.__storage = [];        var storedData = getCookie('shiterator');        if (storedData) {            this.__storage = storedData.split('/');        }        var expirationTimestamp = this.__storage.shift();        if (!expirationTimestamp) {            expirationTimestamp = new Date((new Date()).getTime() + expireAfterDays * 1000 * 60 * 60 * 24);        }        this._expires = this._expires = expirationTimestamp;    };    ErrorStorage.prototype.__storeInCookies = function() {        var cookie = [this._expires].concat(this.__storage).join('/');        setCookie('shiterator', cookie, this._expires);    };    ErrorStorage.prototype.has = function(key) {        return this.__storage.indexOf(key) !== -1;    };    ErrorStorage.prototype.put = function(key) {        this.__storage.push(key);        this.__storeInCookies();    };    function f(n) {        // Format integers to have at least two digits.        return n < 10 ? '0' + n : n;    }    if (typeof Date.prototype.toJSON !== 'function') {        Date.prototype.toJSON = function (key) {            return isFinite(this.valueOf()) ?                this.getUTCFullYear()     + '-' +                f(this.getUTCMonth() + 1) + '-' +                f(this.getUTCDate())      + 'T' +                f(this.getUTCHours())     + ':' +                f(this.getUTCMinutes())   + ':' +                f(this.getUTCSeconds())   + 'Z' : null;        };        String.prototype.toJSON      =            Number.prototype.toJSON  =            Boolean.prototype.toJSON = function (key) {                return this.valueOf();            };    }    var escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,        gap,        indent,        meta = {    // table of character substitutions            '\b': '\\b',            '\t': '\\t',            '\n': '\\n',            '\f': '\\f',            '\r': '\\r',            '"' : '\\"',            '\\': '\\\\'        },        rep;    function quote(string) {        escapable.lastIndex = 0;        return escapable.test(string) ? '"' + string.replace(escapable, function (a) {            var c = meta[a];            return typeof c === 'string' ? c :                '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);        }) + '"' : '"' + string + '"';    }    function str(key, holder) {        var i,          // The loop counter.            k,          // The member key.            v,          // The member value.            length,            mind = gap,            partial,            value = holder[key];        if (value && typeof value === 'object' &&                typeof value.toJSON === 'function') {            value = value.toJSON(key);        }        if (typeof rep === 'function') {            value = rep.call(holder, key, value);        }        switch (typeof value) {        case 'string':            return quote(value);        case 'number':            return isFinite(value) ? String(value) : 'null';        case 'boolean':        case 'null':            return String(value);        case 'object':            if (!value) {                return 'null';            }            gap += indent;            partial = [];            if (Object.prototype.toString.apply(value) === '[object Array]') {                length = value.length;                for (i = 0; i < length; i += 1) {                    partial[i] = str(i, value) || 'null';                }                v = partial.length === 0 ? '[]' : gap ?                    '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']' :                    '[' + partial.join(',') + ']';                gap = mind;                return v;            }            if (rep && typeof rep === 'object') {                length = rep.length;                for (i = 0; i < length; i += 1) {                    if (typeof rep[i] === 'string') {                        k = rep[i];                        v = str(k, value);                        if (v) {                            partial.push(quote(k) + (gap ? ': ' : ':') + v);                        }                    }                }            } else {                for (k in value) {                    if (Object.prototype.hasOwnProperty.call(value, k)) {                        v = str(k, value);                        if (v) {                            partial.push(quote(k) + (gap ? ': ' : ':') + v);                        }                    }                }            }            v = partial.length === 0 ? '{}' : gap ?                '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}' :                '{' + partial.join(',') + '}';            gap = mind;            return v;        }    }    function JSONToString(value, replacer, space) {        if (JSON && JSON.stringify) {            return JSON.stringify(value, replacer, space);        }        var i;        gap = '';        indent = '';        if (typeof space === 'number') {            for (i = 0; i < space; i += 1) {                indent += ' ';            }        } else if (typeof space === 'string') {            indent = space;        }        rep = replacer;        if (replacer && typeof replacer !== 'function' &&                (typeof replacer !== 'object' ||                typeof replacer.length !== 'number')) {            throw new Error('JSON.stringify');        }        return str('', {'': value});    }    // merge two objects (not a deep copy)    function merge(destination, source) {        for (var key in source) {            if (source.hasOwnProperty(key)) {                destination[key] = source[key];            }        }        return destination;    }    // empty function    function noop() {}    // crc32    function crc32(str) {        var table = "00000000 77073096 EE0E612C 990951BA 076DC419 706AF48F E963A535 9E6495A3 0EDB8832 79DCB8A4 E0D5E91E 97D2D988 09B64C2B 7EB17CBD E7B82D07 90BF1D91 1DB71064 6AB020F2 F3B97148 84BE41DE 1ADAD47D 6DDDE4EB F4D4B551 83D385C7 136C9856 646BA8C0 FD62F97A 8A65C9EC 14015C4F 63066CD9 FA0F3D63 8D080DF5 3B6E20C8 4C69105E D56041E4 A2677172 3C03E4D1 4B04D447 D20D85FD A50AB56B 35B5A8FA 42B2986C DBBBC9D6 ACBCF940 32D86CE3 45DF5C75 DCD60DCF ABD13D59 26D930AC 51DE003A C8D75180 BFD06116 21B4F4B5 56B3C423 CFBA9599 B8BDA50F 2802B89E 5F058808 C60CD9B2 B10BE924 2F6F7C87 58684C11 C1611DAB B6662D3D 76DC4190 01DB7106 98D220BC EFD5102A 71B18589 06B6B51F 9FBFE4A5 E8B8D433 7807C9A2 0F00F934 9609A88E E10E9818 7F6A0DBB 086D3D2D 91646C97 E6635C01 6B6B51F4 1C6C6162 856530D8 F262004E 6C0695ED 1B01A57B 8208F4C1 F50FC457 65B0D9C6 12B7E950 8BBEB8EA FCB9887C 62DD1DDF 15DA2D49 8CD37CF3 FBD44C65 4DB26158 3AB551CE A3BC0074 D4BB30E2 4ADFA541 3DD895D7 A4D1C46D D3D6F4FB 4369E96A 346ED9FC AD678846 DA60B8D0 44042D73 33031DE5 AA0A4C5F DD0D7CC9 5005713C 270241AA BE0B1010 C90C2086 5768B525 206F85B3 B966D409 CE61E49F 5EDEF90E 29D9C998 B0D09822 C7D7A8B4 59B33D17 2EB40D81 B7BD5C3B C0BA6CAD EDB88320 9ABFB3B6 03B6E20C 74B1D29A EAD54739 9DD277AF 04DB2615 73DC1683 E3630B12 94643B84 0D6D6A3E 7A6A5AA8 E40ECF0B 9309FF9D 0A00AE27 7D079EB1 F00F9344 8708A3D2 1E01F268 6906C2FE F762575D 806567CB 196C3671 6E6B06E7 FED41B76 89D32BE0 10DA7A5A 67DD4ACC F9B9DF6F 8EBEEFF9 17B7BE43 60B08ED5 D6D6A3E8 A1D1937E 38D8C2C4 4FDFF252 D1BB67F1 A6BC5767 3FB506DD 48B2364B D80D2BDA AF0A1B4C 36034AF6 41047A60 DF60EFC3 A867DF55 316E8EEF 4669BE79 CB61B38C BC66831A 256FD2A0 5268E236 CC0C7795 BB0B4703 220216B9 5505262F C5BA3BBE B2BD0B28 2BB45A92 5CB36A04 C2D7FFA7 B5D0CF31 2CD99E8B 5BDEAE1D 9B64C2B0 EC63F226 756AA39C 026D930A 9C0906A9 EB0E363F 72076785 05005713 95BF4A82 E2B87A14 7BB12BAE 0CB61B38 92D28E9B E5D5BE0D 7CDCEFB7 0BDBDF21 86D3D2D4 F1D4E242 68DDB3F8 1FDA836E 81BE16CD F6B9265B 6FB077E1 18B74777 88085AE6 FF0F6A70 66063BCA 11010B5C 8F659EFF F862AE69 616BFFD3 166CCF45 A00AE278 D70DD2EE 4E048354 3903B3C2 A7672661 D06016F7 4969474D 3E6E77DB AED16A4A D9D65ADC 40DF0B66 37D83BF0 A9BCAE53 DEBB9EC5 47B2CF7F 30B5FFE9 BDBDF21C CABAC28A 53B39330 24B4A3A6 BAD03605 CDD70693 54DE5729 23D967BF B3667A2E C4614AB8 5D681B02 2A6F2B94 B40BBE37 C30C8EA1 5A05DF1B 2D02EF8D";        var crc = 0 ^ (-1);        var x = 0;        var y = 0;        for (var i = 0, iTop = str.length; i < iTop; i++) {            y = ( crc ^ str.charCodeAt(i) ) & 0xFF;            x = "0x" + table.substr(y * 9, 8);            crc = ( crc >>> 8 ) ^ x;        }        return crc ^ (-1);    }    function setCookie( name, value, expires, path, domain, secure ) {    // set time, it's in milliseconds    var today = new Date();    today.setTime( today.getTime() );    /*    if the expires variable is set, make the correct    expires time, the current script below will set    it for x number of days, to make it for hours,    delete * 24, for minutes, delete * 60 * 24    *///    if ( expires ) {//        expires = expires * 1000 * 60 * 60 * 24;//    }    var expires_date = new Date(expires);    document.cookie = name + "=" +escape( value ) +    ( ( expires ) ? ";expires=" + expires_date.toGMTString() : "" ) +    ( ( path ) ? ";path=" + path : "" ) +    ( ( domain ) ? ";domain=" + domain : "" ) +    ( ( secure ) ? ";secure" : "" );    }    function getCookie( check_name ) {        // first we'll split this cookie up into name/value pairs        // note: document.cookie only returns name=value, not the other components        var a_all_cookies = document.cookie.split( ';' );        var a_temp_cookie = '';        var cookie_name = '';        var cookie_value = '';        var b_cookie_found = false; // set boolean t/f default f        for (var i = 0; i < a_all_cookies.length; i++ ) {            // now we'll split apart each name=value pair            a_temp_cookie = a_all_cookies[i].split( '=' );            // and trim left/right whitespace while we're at it            cookie_name = a_temp_cookie[0].replace(/^\s+|\s+$/g, '');            // if the extracted name matches passed check_name            if ( cookie_name == check_name )            {                b_cookie_found = true;                // we need to handle case where cookie has no value but exists (no = sign, that is):                if ( a_temp_cookie.length > 1 )                {                    cookie_value = unescape( a_temp_cookie[1].replace(/^\s+|\s+$/g, '') );                }                // note that in cases where cookie is initialized but no value, null is returned                return cookie_value;            }            a_temp_cookie = null;            cookie_name = '';        }        if ( !b_cookie_found ) {            return null;        }    }})();
