@@ -5,6 +5,8 @@ var http  = require('http'),
 
 var util = require('util');
 
+// TODO: Generate XML by special util
+
 module.exports = Redmine = function(options) {
     this._options = utils.merge({
         host      : null,
