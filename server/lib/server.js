@@ -1,8 +1,7 @@
 // Start server
 var http = require('http'),
     util = require('util'),
-    utils = require('./utils.js'),
-	cluster = require('cluster');
+    utils = require('./utils.js');
 
 var Errors = require('./errors.js'),
     ShiteratorError = require('./errors/error.js');
@@ -97,7 +96,7 @@ Server.prototype.listen = function(port, host) {
     port = port || this._options.port;
     host = host || this._options.host
 
-    cluster(this._httpServer).listen(port, host);
+    this._httpServer.listen(port, host);
     util.log('Shiterator started on ' + host + ':' + port);
 }
 
