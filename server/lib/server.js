@@ -1,8 +1,7 @@
 // Start server
 var http = require('http'),
     util = require('util'),
-    utils = require('./utils.js'),
-	cluster = require('cluster');
+    utils = require('./utils.js');
 
 var Errors = require('./errors.js'),
     ShiteratorError = require('./errors/error.js');
@@ -13,6 +12,8 @@ module.exports = Server = function(options) {
         port : 6666,
 
         updateInterval : 60 * 3, // 3 minute
+        
+        cluster : true,
 
         tracker : {
             name     : null,
@@ -66,6 +67,18 @@ Server.prototype._handleRequest = function(request, response) {
     request.on('end', function() {
         response.writeHead(201);
         response.end();
+ 
+        if (request.headers['content-type'] &&
+            request.headers['content-type'] === 'application/x-www-form-urlencoded') {
+            var params = errorsRaw.split('&') ;
+            for (var param in params ) {
+                var pair = params[param].split('=') ;
+                if (pair[0] == 'errors') {
+                    // TODO: Where is pluses???
+                    errorsRaw = decodeURIComponent(pair[1].replace(/\+/g, " "));
+                }
+            }
+        }
 
         try {
             var errorsJson = JSON.parse(errorsRaw);
@@ -95,9 +108,10 @@ Server.prototype._handleRequest = function(request, response) {
 
 Server.prototype.listen = function(port, host) {
     port = port || this._options.port;
-    host = host || this._options.host
+    host = host || this._options.host;
+    
+    this._httpServer.listen(port, host);
 
-    cluster(this._httpServer).listen(port, host);
     util.log('Shiterator started on ' + host + ':' + port);
 }
 
