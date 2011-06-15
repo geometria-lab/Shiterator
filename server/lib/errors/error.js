@@ -11,7 +11,7 @@ ShiteratorError.prototype._setFields = function(json) {
 }
 
 ShiteratorError.TYPES = {
-    javaScript   : require('./javascript.js'),
+    javascript   : require('./javascript.js'),
     phpError     : require('./php_error.js'),
     phpException : require('./php_exception.js')
 };
