@@ -2,14 +2,15 @@
 <html>
 <head>
     <title></title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
     <script type="text/javascript" src="../clients/js/lib/utils.js"></script>
     <script type="text/javascript" src="../clients/js/lib/errorstorage.js"></script>
-    <script type="text/javascript" src="../clients/js/lib/onerror.js"></script>
+    <script type="text/javascript" src="../clients/js/lib/errorhandler.js"></script>
     <script type="text/javascript" src="../clients/js/lib/jsontostring.js"></script>
     <script type="text/javascript" src="../clients/js/lib/shiterator.js"></script>
 </head>
 <body>
-    test12
+    <button>Throw me an error!</button>
     <script type="text/javascript">
         var shiterator = new Shiterator(function(error) {
                error.tracker = {
@@ -23,8 +24,9 @@
         });
 
         shiterator.start();
-
-        a.v = 1;
+        $('button').click(function() {
+            a.v = 1;
+        });
     </script>
 </body>
 </html>
