@@ -4,11 +4,12 @@
     <title></title>
     <script type="text/javascript" src="../clients/js/lib/utils.js"></script>
     <script type="text/javascript" src="../clients/js/lib/errorstorage.js"></script>
+    <script type="text/javascript" src="../clients/js/lib/onerror.js"></script>
     <script type="text/javascript" src="../clients/js/lib/jsontostring.js"></script>
     <script type="text/javascript" src="../clients/js/lib/shiterator.js"></script>
 </head>
 <body>
-    test1
+    test12
     <script type="text/javascript">
         var shiterator = new Shiterator(function(error) {
                error.tracker = {
@@ -16,10 +17,9 @@
                     id : 8,
                     project : 4
                };
-                //console.log(arguments);
             }, {
-            host: '127.0.0.1',
-//            ignoreErrors: false
+            host: 'http://localhost',
+            port: 6666
         });
 
         shiterator.start();

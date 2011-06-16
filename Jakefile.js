@@ -15,7 +15,8 @@ task('compressJs', [], function(params) {
 
 	[	'shiterator.js',
         'errorstorage.js',
-        'jsontostring.js',
+        'onerror.js',
+        'errorstorage.js',
 		'utils.js',
 	].forEach(function(file) {
 		javascript += fs.readFileSync('./clients/js/lib/' + file) + "\n\n";
