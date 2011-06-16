@@ -18,6 +18,9 @@
                     id : 8,
                     project : 4
                };
+
+               // setting custom fields:
+               error.custom.ua = navigator.userAgent;
             }, {
             host: 'http://localhost',
             port: 6060
@@ -25,7 +28,7 @@
 
         shiterator.start();
         $('button').click(function() {
-            q.v = 1;
+            t.v = 1;
         });
     </script>
 </body>
