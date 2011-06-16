@@ -9,7 +9,7 @@ var Errors = require('./errors.js'),
 module.exports = Server = function(options) {
     this._options = utils.merge({
         host : '0.0.0.0',
-        port : 6666,
+        port : 6060,
 
         updateInterval : 60 * 3, // 3 minute
         

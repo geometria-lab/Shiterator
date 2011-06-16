@@ -1,6 +1,6 @@
 var options = {
     host     : "0.0.0.0",
-    port     : 6666,
+    port     : 6060,
     tracker  : {
         name         : "redmine",
         host         : "bugs.geometria-lab.net",

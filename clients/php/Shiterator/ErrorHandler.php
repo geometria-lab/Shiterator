@@ -59,7 +59,7 @@ class ErrorHandler
 
     protected static $_shutdownExecuted = false;
 
-    public static function set($callback, $host, $port = 6666)
+    public static function set($callback, $host, $port = 6060)
     {
         self::$host     = $host;
         self::$port     = $port;
