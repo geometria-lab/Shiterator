@@ -33,6 +33,9 @@
         return '' + Math.abs(sum) % MODULE;
     }
 
+    var domReadyListeners = [];
+    var domReady = false;
+
     // run handler on DOMContentLoaded
     function onDomReady(handler, context){
         var called = false;
@@ -44,6 +47,11 @@
             }
             called = true;
             handler.apply(context, arguments);
+        }
+
+        if (document.readyState === 'interactive' ||
+            document.readyState === 'complete') {
+            ready();
         }
 
         if (document.addEventListener) {
