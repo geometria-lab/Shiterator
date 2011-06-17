@@ -112,7 +112,9 @@
                 self.__previousErrorHandler.apply(context, arguments);
             }
 
-            fn.apply(context, arguments);
+            if (message && file && typeof line !== 'undefined') {
+                fn.apply(context, arguments);
+            }
 
             // return true for webkit, and false otherwise
             return self.__WEBKIT;
