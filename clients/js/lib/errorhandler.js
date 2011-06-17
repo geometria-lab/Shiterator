@@ -11,9 +11,7 @@
         this.__handler = this.__createErrorHandler(fn, context);
 
         // Old WebKits ignore window.onerror, so trying to hijack Error.prototype.toString.
-        // In spite of the fact that Mozilla supports window.onerror,
-        // we're doing the same because in this case we car retrieve error's stack trace
-        if (this.__WEBKIT_LT_534_16 || this.__MOZILLA) {
+        if (this.__WEBKIT_LT_534_16) {
             this.__useErrorToString();
         } else {
             this.__useWindowOnError();
