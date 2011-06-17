@@ -13,6 +13,8 @@
         // Old WebKits ignore window.onerror, so trying to hijack Error.prototype.toString.
         if (this.__WEBKIT_LT_534_16) {
             this.__useErrorToString();
+        } else if (this.__MOZILLA) {
+            this.__useGybrid();
         } else {
             this.__useWindowOnError();
         }
@@ -53,6 +55,7 @@
      */
     ErrorHandler.prototype.__useErrorToString = function() {
         var self = this;
+
         Error.prototype.toString = function() {
             var error = self.__getParamsFromErrorObject(this);
             if (error) {
@@ -60,7 +63,34 @@
             }
 
             return this.message;
+        }
+    };
+
+    /*
+     * Set error handler using redefined Error.prototype.toString (Mozilla version)
+     *
+     * @private
+     */
+    ErrorHandler.prototype.__useGybrid = function() {
+        var self = this;
+        var error;
+
+        // In Mozilla, Error.prototype.toString will be called for ALL errors,
+        // even for ones that was caught by try/catch.
+        // So we don't run the handler here, just store an error.
+        Error.prototype.toString = function() {
+            error = self.__getParamsFromErrorObject(this);
+
+            return this.message;
         };
+
+        // Run the handler for previously stored error.
+        window.addEventListener('error', function() {
+            if (error) {
+                self.__handler(error.message, error.file, error.line, error.trace);
+            }
+        }, false);
+
     };
 
     /*
