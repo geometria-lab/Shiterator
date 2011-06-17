@@ -12,7 +12,7 @@
         this._options = merge({
             host: null,
             port: 6060,
-            postingPeriod: 1,          // in seconds
+            postingPeriod: 3,          // in seconds
             forgetErrorsAfter: 1,      // in days, 0 means "1 year"
             errorsLimit: 10
         }, options);
