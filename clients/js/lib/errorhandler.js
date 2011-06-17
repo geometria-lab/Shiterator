@@ -14,7 +14,7 @@
         if (this.__WEBKIT_LT_534_16) {
             this.__useErrorToString();
         } else if (this.__MOZILLA) {
-            this.__useGybrid();
+            this.__useHybrid();
         } else {
             this.__useWindowOnError();
         }
@@ -71,7 +71,7 @@
      *
      * @private
      */
-    ErrorHandler.prototype.__useGybrid = function() {
+    ErrorHandler.prototype.__useHybrid = function() {
         var self = this;
         var error;
 
