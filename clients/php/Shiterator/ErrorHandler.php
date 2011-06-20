@@ -108,7 +108,7 @@ class ErrorHandler
     {
         $errorReporting = error_reporting();
 
-        if ($errorReporting === 0 || $errorReporting & $errorNumber === 0 || !isset(self::$_errorTypes[$errorNumber])) {
+        if ($errorReporting === 0 || ($errorReporting & $errorNumber) === 0 || !isset(self::$_errorTypes[$errorNumber])) {
             return;
         }
 
