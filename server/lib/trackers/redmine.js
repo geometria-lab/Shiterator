@@ -59,7 +59,7 @@ Redmine.prototype.post = function(error, count) {
                     this._create(error, count);
                 }
             } catch (e) {
-                util.log("Can't parse Redmine issues by " + options.path + '. Response code: ' + response.statusCode + '. Response body: ' + data);
+                util.log("Can't parse Redmine issues by " + options.path + '. Response code: ' + response.statusCode + '. Response body: ' + data + '. Error: ' + util.inspect(e));
             }
         }.bind(this));
     }.bind(this));
