@@ -12,9 +12,10 @@
         this._options = merge({
             host: null,
             port: 6060,
-            postingPeriod: 1,          // in seconds
+            postingPeriod: 5,          // in seconds
             forgetErrorsAfter: 1,      // in days, 0 means "1 year"
-            errorsLimit: 10
+            errorsLimit: 10,
+            stackTraceLimit: 1024      // in symbols, 0 means "1Mb"
         }, options);
 
         this.__ShiteratorInit();
@@ -31,8 +32,6 @@
 
         this.__postErrorTimeout = null;
 
-        this.__url = this.__getFullUrl();
-
         this.__form = null;
 
         new ErrorHandler(this.__errorHandler, this);
@@ -48,12 +47,14 @@
     };
 
     Shiterator.prototype.__convertErrorToData = function(message, file, line, trace) {
+        var stackTraceLimit = this._options.stackTraceLimit || 1e6;
+
         return {
             'type'      : 'javascript',
             'subject'   : message + ' on ' + file + ':' + line,
             'message'   : message,
             'line'      : line,
-            'stack'     : trace || 'not available',
+            'stack'     : trace.substring(0, stackTraceLimit) || 'not available',
             'tracker'   : {},
             'file'      : file,
             'custom'    : {
@@ -70,7 +71,7 @@
         }
 
         var self = this;
-        var id = foldString(message + ' on ' + file + ':' + line, 4);
+        var id = foldString(message + ' on ' + file + ':' + line);
         var error = this.__convertErrorToData(message, file, line, trace);
 
         if (!this.__knownErrors.has(id)) {
@@ -91,7 +92,7 @@
     };
 
     Shiterator.prototype.__submitErrors = function() {
-        if (!this.__url) {
+        if (!this.__getFullUrl()) {
             return;
         }
 
@@ -99,7 +100,7 @@
             // create form & iframe
             var box = document.createElement('div');
             box.style.display = 'none';
-            box.innerHTML = '<form action="' + this.__url + '" method="post" target="shiterator-error-frame" name="shiterator-form">' +
+            box.innerHTML = '<form action="' + this.__getFullUrl() + '" method="post" target="shiterator-error-frame" name="shiterator-form">' +
                             "<input type='hidden' name='errors' value=''>" +
                             '</form>' +
                             '<iframe id="shiterator-error-frame" name="shiterator-error-frame"></iframe>';
@@ -232,7 +233,7 @@
         if (this.__WEBKIT_LT_534_16) {
             this.__useErrorToString();
         } else if (this.__MOZILLA) {
-            this.__useGybrid();
+            this.__useHybrid();
         } else {
             this.__useWindowOnError();
         }
@@ -242,7 +243,9 @@
      * Is Mozilla
      * @const
      */
-    ErrorHandler.prototype.__MOZILLA = navigator.userAgent.match(/(Mozilla)(?:.*? rv:([\w.]+))?/);
+    ErrorHandler.prototype.__MOZILLA =
+            !navigator.userAgent.match(/MSIE/) &&
+            navigator.userAgent.match(/(Mozilla)(?:.*? rv:([\w.]+))?/);
 
     /*
      * Is WebKit
@@ -289,7 +292,7 @@
      *
      * @private
      */
-    ErrorHandler.prototype.__useGybrid = function() {
+    ErrorHandler.prototype.__useHybrid = function() {
         var self = this;
         var error;
 
@@ -568,9 +571,6 @@
         return '' + Math.abs(sum) % MODULE;
     }
 
-    var domReadyListeners = [];
-    var domReady = false;
-
     // run handler on DOMContentLoaded
     function onDomReady(handler, context){
         var called = false;
@@ -590,9 +590,7 @@
         }
 
         if (document.addEventListener) {
-            document.addEventListener("DOMContentLoaded", function() {
-                ready();
-            }, false );
+            document.addEventListener("DOMContentLoaded", ready, false );
         } else if (document.attachEvent) {
             if (document.documentElement.doScroll && window.top) {
                 function tryScroll(){
