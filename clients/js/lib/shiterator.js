@@ -11,7 +11,7 @@
         this._options = merge({
             host: null,
             port: 6060,
-            postingPeriod: 1,          // in seconds
+            postingPeriod: 5,          // in seconds
             forgetErrorsAfter: 1,      // in days, 0 means "1 year"
             errorsLimit: 10
         }, options);
@@ -29,8 +29,6 @@
         this.__errorsCount = 0;
 
         this.__postErrorTimeout = null;
-
-        this.__url = this.__getFullUrl();
 
         this.__form = null;
 
@@ -69,7 +67,7 @@
         }
 
         var self = this;
-        var id = foldString(message + ' on ' + file + ':' + line, 4);
+        var id = foldString(message + ' on ' + file + ':' + line);
         var error = this.__convertErrorToData(message, file, line, trace);
 
         if (!this.__knownErrors.has(id)) {
@@ -90,7 +88,7 @@
     };
 
     Shiterator.prototype.__submitErrors = function() {
-        if (!this.__url) {
+        if (!this.__getFullUrl()) {
             return;
         }
 
@@ -98,7 +96,7 @@
             // create form & iframe
             var box = document.createElement('div');
             box.style.display = 'none';
-            box.innerHTML = '<form action="' + this.__url + '" method="post" target="shiterator-error-frame" name="shiterator-form">' +
+            box.innerHTML = '<form action="' + this.__getFullUrl() + '" method="post" target="shiterator-error-frame" name="shiterator-form">' +
                             "<input type='hidden' name='errors' value=''>" +
                             '</form>' +
                             '<iframe id="shiterator-error-frame" name="shiterator-error-frame"></iframe>';
