@@ -177,7 +177,7 @@ Redmine.prototype._addOptions = function(options) {
 }
 
 Redmine.prototype._escape = function(text) {
-    return '<![CDATA[' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;') + ']]>';
+    return '<![CDATA[' + text.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;') + ']]>';
 }
 
 Redmine.prototype.isValidError = function(error) {
