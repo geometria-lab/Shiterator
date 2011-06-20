@@ -33,9 +33,6 @@
         return '' + Math.abs(sum) % MODULE;
     }
 
-    var domReadyListeners = [];
-    var domReady = false;
-
     // run handler on DOMContentLoaded
     function onDomReady(handler, context){
         var called = false;
@@ -55,9 +52,7 @@
         }
 
         if (document.addEventListener) {
-            document.addEventListener("DOMContentLoaded", function() {
-                ready();
-            }, false );
+            document.addEventListener("DOMContentLoaded", ready, false );
         } else if (document.attachEvent) {
             if (document.documentElement.doScroll && window.top) {
                 function tryScroll(){
