@@ -13,7 +13,8 @@
             port: 6060,
             postingPeriod: 5,          // in seconds
             forgetErrorsAfter: 1,      // in days, 0 means "1 year"
-            errorsLimit: 10
+            errorsLimit: 10,
+            stackTraceLimit: 1024      // in symbols, 0 means "1Mb"
         }, options);
 
         this.__ShiteratorInit();
@@ -45,12 +46,14 @@
     };
 
     Shiterator.prototype.__convertErrorToData = function(message, file, line, trace) {
+        var stackTraceLimit = this._options.stackTraceLimit || 1e6;
+
         return {
             'type'      : 'javascript',
             'subject'   : message + ' on ' + file + ':' + line,
             'message'   : message,
             'line'      : line,
-            'stack'     : trace || 'not available',
+            'stack'     : trace.substring(0, stackTraceLimit) || 'not available',
             'tracker'   : {},
             'file'      : file,
             'custom'    : {
