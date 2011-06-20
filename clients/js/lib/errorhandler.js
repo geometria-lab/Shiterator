@@ -24,7 +24,9 @@
      * Is Mozilla
      * @const
      */
-    ErrorHandler.prototype.__MOZILLA = navigator.userAgent.match(/(Mozilla)(?:.*? rv:([\w.]+))?/);
+    ErrorHandler.prototype.__MOZILLA =
+            !navigator.userAgent.match(/MSIE/) &&
+            navigator.userAgent.match(/(Mozilla)(?:.*? rv:([\w.]+))?/);
 
     /*
      * Is WebKit
