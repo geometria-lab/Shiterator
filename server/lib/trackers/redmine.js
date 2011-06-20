@@ -69,15 +69,15 @@ Redmine.prototype.post = function(error, count) {
 Redmine.prototype._create = function(error, count) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                '<issue>' +
-                   '<project_id><![CDATA[' + error.tracker.project + ']]></project_id>' +
-                   '<tracker_id><![CDATA[' + error.tracker.id + ']]></tracker_id>' +
-                   '<priority_id><![CDATA[' + error.tracker.priority + ']]></priority_id>' +
-                   '<subject><![CDATA[' + error.subject + ']]></subject>' +
-                   '<description><![CDATA[' + this._getDescription(error) + ']]></description>' +
+                   '<project_id>' + this._escape(error.tracker.project) + '</project_id>' +
+                   '<tracker_id>' + this._escape(error.tracker.id) + '</tracker_id>' +
+                   '<priority_id>' + this._escape(error.tracker.priority) + '</priority_id>' +
+                   '<subject>' + this._escape(error.subject) + '</subject>' +
+                   '<description>' + this._escape(this._getDescription(error)) + '</description>' +
                    '<custom_field_values>' +
-                       '<' + this._options.customFields.file + '><![CDATA[' + error.file + ']]></' + this._options.customFields.file + '>' +
-                       '<' + this._options.customFields.line + '><![CDATA[' + error.line + ']]></' + this._options.customFields.line + '>' +
-                       '<' + this._options.customFields.count + '><![CDATA[' + count + ']]></' + this._options.customFields.count + '>' +
+                       '<' + this._options.customFields.file + '>' + this._escape(error.file) + '</' + this._options.customFields.file + '>' +
+                       '<' + this._options.customFields.line + '>' + this._escape(error.line) + '</' + this._options.customFields.line + '>' +
+                       '<' + this._options.customFields.count + '>' + this._escape(count) + '</' + this._options.customFields.count + '>' +
                    '</custom_field_values>' +
                '</issue>',
         options = {
@@ -108,15 +108,15 @@ Redmine.prototype._update = function(errorId, error, count, skipJournal) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                        '<issue>' +
                            (skipJournal ? '<skip_journal>1</skip_journal>' : '') +
-                           '<status_id><![CDATA[' + this._options.statusNew + ']]></status_id>' +
-                           '<project_id><![CDATA[' + error.tracker.project + ']]></project_id>' +
-                           '<tracker_id><![CDATA[' + error.tracker.id + ']]></tracker_id>' +
-                           '<priority_id><![CDATA[' + error.tracker.priority + ']]></priority_id>' +
-                           '<description><![CDATA[' + this._getDescription(error) + ']]></description>' +
+                           '<status_id>' + this._escape(this._options.statusNew) + '</status_id>' +
+                           '<project_id>' + this._escape(error.tracker.project) + '</project_id>' +
+                           '<tracker_id>' + this._escape(error.tracker.id) + '</tracker_id>' +
+                           '<priority_id>' + this._escape(error.tracker.priority) + '</priority_id>' +
+                           '<description>' + this._escape(this._getDescription(error)) + '</description>' +
                            '<custom_field_values>' +
-                               '<' + this._options.customFields.file + '><![CDATA[' + error.file + ']]></' + this._options.customFields.file + '>' +
-                               '<' + this._options.customFields.line + '><![CDATA[' + error.line + ']]></' + this._options.customFields.line + '>' +
-                               '<' + this._options.customFields.count + '><![CDATA[' + count + ']]></' + this._options.customFields.count + '>' +
+                               '<' + this._options.customFields.file + '>' + this._escape(error.file) + '</' + this._options.customFields.file + '>' +
+                               '<' + this._options.customFields.line + '>' + this._escape(error.line) + '</' + this._options.customFields.line + '>' +
+                               '<' + this._options.customFields.count + '>' + this._escape(count) + '</' + this._options.customFields.count + '>' +
                            '</custom_field_values>' +
                        '</issue>',
                 options = {
@@ -174,6 +174,10 @@ Redmine.prototype._addOptions = function(options) {
             Authorization : "Basic " + new Buffer(this._options.login + ":" + this._options.password).toString('base64')
         }
     }, options);
+}
+
+Redmine.prototype._escape = function(text) {
+    return '<![CDATA[' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;') + ']]>';
 }
 
 Redmine.prototype.isValidError = function(error) {
