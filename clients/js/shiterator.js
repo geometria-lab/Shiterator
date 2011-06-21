@@ -15,7 +15,8 @@
             postingPeriod: 5,          // in seconds
             forgetErrorsAfter: 1,      // in days, 0 means "1 year"
             errorsLimit: 10,
-            stackTraceLimit: 1024      // in symbols, 0 means "1Mb"
+            stackTraceLimit: 1024,     // in symbols, 0 means "1Mb",
+            ignoreBrowsers: {}
         }, options);
 
         this.__ShiteratorInit();
@@ -34,7 +35,7 @@
 
         this.__form = null;
 
-        new ErrorHandler(this.__errorHandler, this);
+        new ErrorHandler(this.__errorHandler, this._options.ignoreBrowsers, this);
     };
 
     Shiterator.prototype.__getFullUrl = function() {
@@ -137,6 +138,7 @@
             clearTimeout(this.__postErrorTimeout);
         }
     };
+    
 
     var ErrorStorage = function(expireAfterDays) {
         this.__storage;
@@ -225,7 +227,14 @@
      * @param {function(message, file, line, trace)} fn Error handling function
      * @param {Object} context Context for error handling function execution
      */
-    var ErrorHandler = function(fn, context) {
+    var ErrorHandler = function(fn, ignore, context) {
+        // do not create error handler if the user agent is in 'ignored' list
+        for (var b in ignore) {
+            if (browser[b] && browser.version <= ignore[b]) {
+                return;
+            }
+        }
+
         this.__handler = this.__createErrorHandler(fn, context);
 
         // Old WebKits ignore window.onerror, so trying to hijack Error.prototype.toString.
@@ -273,7 +282,7 @@
         var error;
 
         // In Mozilla, Error.prototype.toString will be called for ALL errors,
-        // even for ones that was caught by try/catch.
+        // even for ones that was already caught by try/catch.
         // So we don't run the handler here, just store an error.
         Error.prototype.toString = function() {
             error = self.__getParamsFromErrorObject(this);
@@ -352,7 +361,7 @@
             }
 
             // return true for webkit, and false otherwise
-            return self.__WEBKIT;
+            return !!browser.webkit;
         }
     };
 

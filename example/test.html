@@ -22,13 +22,20 @@
                // setting custom fields:
                error.custom.ua = navigator.userAgent;
             }, {
-            host: 'http://localhost',
-            port: 6060
+            host: 'localhost',
+            port: 6060,
+
+            // do not report error from following browsers
+            ignoreBrowsers: {
+                msie: 6,        // IE 6-
+                opera: 11.11,   // opera 11.11-
+                mozilla: 1.8    // firefox 2-
+            }
         });
 
         shiterator.start();
         $('button').click(function() {
-            t.v = 1;
+            a.v = 1;
         });
     </script>
 </body>

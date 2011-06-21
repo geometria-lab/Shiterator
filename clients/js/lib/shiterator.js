@@ -14,7 +14,8 @@
             postingPeriod: 5,          // in seconds
             forgetErrorsAfter: 1,      // in days, 0 means "1 year"
             errorsLimit: 10,
-            stackTraceLimit: 1024      // in symbols, 0 means "1Mb"
+            stackTraceLimit: 1024,     // in symbols, 0 means "1Mb",
+            ignoreBrowsers: {}
         }, options);
 
         this.__ShiteratorInit();
@@ -33,7 +34,7 @@
 
         this.__form = null;
 
-        new ErrorHandler(this.__errorHandler, this);
+        new ErrorHandler(this.__errorHandler, this._options.ignoreBrowsers, this);
     };
 
     Shiterator.prototype.__getFullUrl = function() {
@@ -136,3 +137,4 @@
             clearTimeout(this.__postErrorTimeout);
         }
     };
+    
