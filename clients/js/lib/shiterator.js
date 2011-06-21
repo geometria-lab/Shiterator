@@ -53,7 +53,7 @@
             'subject'   : message + ' on ' + file + ':' + line,
             'message'   : message,
             'line'      : line,
-            'stack'     : trace.substring(0, stackTraceLimit) || 'not available',
+            'stack'     : trace ? trace.toString().substring(0, stackTraceLimit) : 'not available',
             'tracker'   : {},
             'file'      : file,
             'custom'    : {
