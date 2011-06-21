@@ -22,16 +22,13 @@
         this.__expires = this.__expires = expirationTimestamp;
     };
     
-    ErrorStorage.prototype.__setCookie = function(name, value, expires, path, domain, secure) {
+    ErrorStorage.prototype.__setCookie = function(name, value, expires) {
         var today = new Date();
         today.setTime(today.getTime());
         var expires_date = new Date(expires);
 
         document.cookie = name + "=" + encodeURIComponent(value) +
-                          (expires ? ";expires=" + expires_date.toGMTString() : "") +
-                          (path ? ";path=" + path : "") +
-                          (domain ? ";domain=" + domain : "") +
-                          (secure ? ";secure" : "");
+                          (expires ? ";expires=" + expires_date.toGMTString() : "");
     };
 
     ErrorStorage.prototype.__getCookie = function(check_name) {
@@ -40,7 +37,8 @@
         var cookieName = '';
         var cookieValue = '';
 
-        for (var i = 0, len = allCookies.length; i < len; ++i) {
+        var i = allCookies.length;
+        while (i--) {
             tempCookie = allCookies[i].split('=');
 
             cookieName = tempCookie[0].replace(/^\s+|\s+$/g, '');
@@ -63,7 +61,8 @@
     };
 
     ErrorStorage.prototype.has = function(key) {
-        for (var i = 0, l = this.__storage.length; i < l; ++i) {
+        var i = this.__storage.length;
+        while (i--) {
             if (this.__storage[i] === key) {
                 return true;
             }
