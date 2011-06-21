@@ -39,10 +39,7 @@
         var self = this;
 
         Error.prototype.toString = function() {
-            var error = self.__getParamsFromErrorObject(this);
-            if (error) {
-                self.__handler(error.message, error.file, error.line, error.trace);
-            }
+            self.__handleError(self.__getParamsFromErrorObject(this));
 
             return this.message;
         }
@@ -62,17 +59,25 @@
         // So we don't run the handler here, just store an error.
         Error.prototype.toString = function() {
             error = self.__getParamsFromErrorObject(this);
-
             return this.message;
         };
 
         // Run the handler for previously stored error.
         window.addEventListener('error', function() {
-            if (error) {
-                self.__handler(error.message, error.file, error.line, error.trace);
-            }
+            self.__handleError(error);
         }, false);
 
+    };
+
+    /*
+     * Run error handler if error exists
+     *
+     * @private
+     */
+    ErrorHandler.prototype.__handleError = function(error) {
+        if (error) {
+            this.__handler(error.message, error.file, error.line, error.trace);
+        }
     };
 
     /*
