@@ -11,34 +11,14 @@
         this.__handler = this.__createErrorHandler(fn, context);
 
         // Old WebKits ignore window.onerror, so trying to hijack Error.prototype.toString.
-        if (this.__WEBKIT_LT_534_16) {
+        if (browser.webkit && browser.version < 534.16) {
             this.__useErrorToString();
-        } else if (this.__MOZILLA) {
+        } else if (browser.mozilla) {
             this.__useHybrid();
         } else {
             this.__useWindowOnError();
         }
     };
-
-    /*
-     * Is Mozilla
-     * @const
-     */
-    ErrorHandler.prototype.__MOZILLA =
-            !navigator.userAgent.match(/MSIE/) &&
-            navigator.userAgent.match(/(Mozilla)(?:.*? rv:([\w.]+))?/);
-
-    /*
-     * Is WebKit
-     * @const
-     */
-    ErrorHandler.prototype.__WEBKIT = navigator.userAgent.indexOf('WebKit') !== -1;
-
-    /*
-     * Is WebKit version lower than 534.16 (Safari 5 and Chrome < 10)
-     * @const
-     */
-    ErrorHandler.prototype.__WEBKIT_LT_534_16 = +navigator.userAgent.replace(/.*AppleWebKit\/([0-9]+\.[0-9]+).*/, '$1') < 534.16;
 
     /*
      * Set error handler using window.onerror

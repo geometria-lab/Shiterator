@@ -79,3 +79,24 @@
             });
         }
     }
+
+    var browser = (function detectBrowser() {
+        var rwebkit = /(webkit)[ \/]([\w.]+)/,
+            ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
+            rmsie = /(msie) ([\w.]+)/,
+            rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/;
+
+        var ua = navigator.userAgent.toLowerCase();
+
+        var match = rwebkit.exec(ua) ||
+                    ropera.exec(ua) ||
+                    rmsie.exec(ua) ||
+                    ua.indexOf("compatible") < 0 && rmozilla.exec(ua) ||
+                    [];
+
+        var browser = {};
+        browser[match[1] || ""] = true;
+        browser.version = parseFloat(match[2]) || 0;
+
+        return browser;
+    })();
