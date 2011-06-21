@@ -54,7 +54,7 @@
             'subject'   : message + ' on ' + file + ':' + line,
             'message'   : message,
             'line'      : line,
-            'stack'     : trace.substring(0, stackTraceLimit) || 'not available',
+            'stack'     : trace ? trace.toString().substring(0, stackTraceLimit) : 'not available',
             'tracker'   : {},
             'file'      : file,
             'custom'    : {
@@ -162,16 +162,13 @@
         this.__expires = this.__expires = expirationTimestamp;
     };
     
-    ErrorStorage.prototype.__setCookie = function(name, value, expires, path, domain, secure) {
+    ErrorStorage.prototype.__setCookie = function(name, value, expires) {
         var today = new Date();
         today.setTime(today.getTime());
         var expires_date = new Date(expires);
 
         document.cookie = name + "=" + encodeURIComponent(value) +
-                          (expires ? ";expires=" + expires_date.toGMTString() : "") +
-                          (path ? ";path=" + path : "") +
-                          (domain ? ";domain=" + domain : "") +
-                          (secure ? ";secure" : "");
+                          (expires ? ";expires=" + expires_date.toGMTString() : "");
     };
 
     ErrorStorage.prototype.__getCookie = function(check_name) {
@@ -180,7 +177,8 @@
         var cookieName = '';
         var cookieValue = '';
 
-        for (var i = 0, len = allCookies.length; i < len; ++i) {
+        var i = allCookies.length;
+        while (i--) {
             tempCookie = allCookies[i].split('=');
 
             cookieName = tempCookie[0].replace(/^\s+|\s+$/g, '');
@@ -203,7 +201,8 @@
     };
 
     ErrorStorage.prototype.has = function(key) {
-        for (var i = 0, l = this.__storage.length; i < l; ++i) {
+        var i = this.__storage.length;
+        while (i--) {
             if (this.__storage[i] === key) {
                 return true;
             }
@@ -230,34 +229,14 @@
         this.__handler = this.__createErrorHandler(fn, context);
 
         // Old WebKits ignore window.onerror, so trying to hijack Error.prototype.toString.
-        if (this.__WEBKIT_LT_534_16) {
+        if (browser.webkit && browser.version < 534.16) {
             this.__useErrorToString();
-        } else if (this.__MOZILLA) {
+        } else if (browser.mozilla) {
             this.__useHybrid();
         } else {
             this.__useWindowOnError();
         }
     };
-
-    /*
-     * Is Mozilla
-     * @const
-     */
-    ErrorHandler.prototype.__MOZILLA =
-            !navigator.userAgent.match(/MSIE/) &&
-            navigator.userAgent.match(/(Mozilla)(?:.*? rv:([\w.]+))?/);
-
-    /*
-     * Is WebKit
-     * @const
-     */
-    ErrorHandler.prototype.__WEBKIT = navigator.userAgent.indexOf('WebKit') !== -1;
-
-    /*
-     * Is WebKit version lower than 534.16 (Safari 5 and Chrome < 10)
-     * @const
-     */
-    ErrorHandler.prototype.__WEBKIT_LT_534_16 = +navigator.userAgent.replace(/.*AppleWebKit\/([0-9]+\.[0-9]+).*/, '$1') < 534.16;
 
     /*
      * Set error handler using window.onerror
@@ -278,10 +257,7 @@
         var self = this;
 
         Error.prototype.toString = function() {
-            var error = self.__getParamsFromErrorObject(this);
-            if (error) {
-                self.__handler(error.message, error.file, error.line, error.trace);
-            }
+            self.__handleError(self.__getParamsFromErrorObject(this));
 
             return this.message;
         }
@@ -301,17 +277,25 @@
         // So we don't run the handler here, just store an error.
         Error.prototype.toString = function() {
             error = self.__getParamsFromErrorObject(this);
-
             return this.message;
         };
 
         // Run the handler for previously stored error.
         window.addEventListener('error', function() {
-            if (error) {
-                self.__handler(error.message, error.file, error.line, error.trace);
-            }
+            self.__handleError(error);
         }, false);
 
+    };
+
+    /*
+     * Run error handler if error exists
+     *
+     * @private
+     */
+    ErrorHandler.prototype.__handleError = function(error) {
+        if (error) {
+            this.__handler(error.message, error.file, error.line, error.trace);
+        }
     };
 
     /*
@@ -617,6 +601,27 @@
             });
         }
     }
+
+    var browser = (function detectBrowser() {
+        var rwebkit = /(webkit)[ \/]([\w.]+)/,
+            ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
+            rmsie = /(msie) ([\w.]+)/,
+            rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/;
+
+        var ua = navigator.userAgent.toLowerCase();
+
+        var match = rwebkit.exec(ua) ||
+                    ropera.exec(ua) ||
+                    rmsie.exec(ua) ||
+                    ua.indexOf("compatible") < 0 && rmozilla.exec(ua) ||
+                    [];
+
+        var browser = {};
+        browser[match[1] || ""] = true;
+        browser.version = parseFloat(match[2]) || 0;
+
+        return browser;
+    })();
 
 
 })();
