@@ -626,7 +626,7 @@
                     [];
 
         var browser = {};
-        browser[match[1] || ""] = true;
+        browser[match[1] || "unknown"] = true;
         browser.version = parseFloat(match[2]) || 0;
 
         return browser;
