@@ -15,7 +15,8 @@
             forgetErrorsAfter: 1,      // in days, 0 means "1 year"
             errorsLimit: 10,
             stackTraceLimit: 1024,     // in symbols, 0 means "1Mb",
-            ignoreBrowsers: {}
+            ignoreBrowsers: {},
+            acceptErrors: 'all'        // 'all' | 'domain' | 'subdomain' | RegExp
         }, options);
 
         this.__ShiteratorInit();
@@ -34,7 +35,10 @@
 
         this.__form = null;
 
-        new ErrorHandler(this.__errorHandler, this._options.ignoreBrowsers, this);
+        new ErrorHandler(this.__errorHandler,
+                         this._options.ignoreBrowsers,
+                         this._options.acceptErrors,
+                         this);
     };
 
     Shiterator.prototype.__getFullUrl = function() {

@@ -16,7 +16,8 @@
             forgetErrorsAfter: 1,      // in days, 0 means "1 year"
             errorsLimit: 10,
             stackTraceLimit: 1024,     // in symbols, 0 means "1Mb",
-            ignoreBrowsers: {}
+            ignoreBrowsers: {},
+            acceptErrors: 'all'        // 'all' | 'domain' | 'subdomain' | RegExp
         }, options);
 
         this.__ShiteratorInit();
@@ -35,7 +36,10 @@
 
         this.__form = null;
 
-        new ErrorHandler(this.__errorHandler, this._options.ignoreBrowsers, this);
+        new ErrorHandler(this.__errorHandler,
+                         this._options.ignoreBrowsers,
+                         this._options.acceptErrors,
+                         this);
     };
 
     Shiterator.prototype.__getFullUrl = function() {
@@ -225,15 +229,19 @@
      * @private
      * @constructor
      * @param {function(message, file, line, trace)} fn Error handling function
+     * @param {Object} ignore
+     * @param {String|RegExp} accept
      * @param {Object} context Context for error handling function execution
      */
-    var ErrorHandler = function(fn, ignore, context) {
+    var ErrorHandler = function(fn, ignore, accept, context) {
         // do not create error handler if the user agent is in 'ignored' list
         for (var b in ignore) {
             if (browser[b] && browser.version <= ignore[b]) {
                 return;
             }
         }
+
+        this.__hostMatch = this.__createHostMatchRegExp(accept);
 
         this.__handler = this.__createErrorHandler(fn, context);
 
@@ -245,6 +253,44 @@
         } else {
             this.__useWindowOnError();
         }
+    };
+
+    ErrorHandler.prototype.__isHostAccepted = function(host) {
+        return !!this.__hostMatch.exec(host);
+    };
+
+    ErrorHandler.prototype.__createHostMatchRegExp = function(accept) {
+        var host = location.host;
+        var protocol = "^[^/]+:\\/\\/";
+        var search = "(\\/|\\?|#)";
+        var re;
+
+        if (typeof accept !== 'string' && !(accept instanceof RegExp)) {
+            accept = accept.toString();
+        }
+
+        if (typeof accept === 'string') {
+            // string
+            switch (accept.toLowerCase()) {
+                case 'all':
+                    // accept all by default
+                    re = new RegExp("", "i");
+                    break;
+                case 'domain':
+                    re = new RegExp(protocol + host + search, "i");
+                    break;
+                case 'subdomain':
+                    re = new RegExp(protocol + "([^?#/. ]+\\.)*" + host + search, "i");
+                    break;
+                default:
+                    re = new RegExp(accept, "");
+            }
+        } else {
+            // regexp
+            re = accept;
+        }
+
+        return re;
     };
 
     /*
@@ -356,7 +402,7 @@
                 self.__previousErrorHandler.apply(context, arguments);
             }
 
-            if (message && file && typeof line !== 'undefined') {
+            if (message && file && typeof line !== 'undefined' && self.__isHostAccepted(file)) {
                 fn.apply(context, arguments);
             }
 
@@ -626,7 +672,7 @@
                     [];
 
         var browser = {};
-        browser[match[1] || "unknown"] = true;
+        browser[match[1] || ""] = true;
         browser.version = parseFloat(match[2]) || 0;
 
         return browser;
