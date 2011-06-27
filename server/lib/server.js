@@ -75,7 +75,10 @@ Server.prototype._handleRequest = function(request, response) {
                 var pair = params[param].split('=') ;
                 if (pair[0] == 'errors') {
                     // TODO: Where is pluses???
-                    errorsRaw = decodeURIComponent(pair[1].replace(/\+/g, " "));
+                    try {
+                        errorsRaw = decodeURIComponent(pair[1].replace(/\+/g, " "));
+                    } catch (e) {
+                    }
                 }
             }
         }
