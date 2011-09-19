@@ -63,6 +63,9 @@ Redmine.prototype.post = function(error, count) {
             }
         }.bind(this));
     }.bind(this));
+    request.on('error', function(e){
+        util.log("Can't parse Redmine issue: " + e.message);
+    })
     request.end();
 };
 
@@ -100,6 +103,9 @@ Redmine.prototype._create = function(error, count) {
             });
         }
     });
+    request.on('error', function(e){
+        util.log("Can't create Redmine issue: " + e.message);
+    })
     request.write(body);
     request.end();
 }
@@ -139,6 +145,9 @@ Redmine.prototype._update = function(errorId, error, count, skipJournal) {
             });
         }
     });
+    request.on('error', function(e){
+        util.log("Can't update Redmine issue: " + e.message);
+    })
     request.write(body);
     request.end();
 }
@@ -176,6 +185,7 @@ Redmine.prototype._addOptions = function(options) {
     }, options);
 }
 
+// TODO: Doesn't work properly
 Redmine.prototype._escape = function(text) {
     //return '<![CDATA[' + text.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;') + ']]>';
     return '<![CDATA[' + text.toString().replace(/\]\]>/g, ' ]>').replace(/<!\[CDATA\[/g, ' <!CDATA[') + ']]>';

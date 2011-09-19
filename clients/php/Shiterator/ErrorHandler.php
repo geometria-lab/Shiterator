@@ -116,18 +116,14 @@ class ErrorHandler
 
         $error = new $className($message, $file, $line);
 
-        if (call_user_func(self::$callback, $error) !== false) {
-            self::addError($error);
-        }
+        self::_handleCallback($error);
     }
 
     public static function handleException(\Exception $e, $isFatal = true)
     {
         $error = new Error\Exception($e, $isFatal);
 
-        if (call_user_func(self::$callback, $error) !== false) {
-            self::addError($error);
-        }
+        self::_handleCallback($error);
     }
 
     public static function handleShutdown()
@@ -143,11 +139,16 @@ class ErrorHandler
         if ($lastError && $lastError['type'] == E_ERROR) {
             $error = new Error\Error($lastError['message'], $lastError['file'], $lastError['line']);
 
-            if (call_user_func(self::$callback, $error) !== false) {
-                self::addError($error);
-            }
+            self::_handleCallback($error);
         }
 
         self::saveErrors();
+    }
+
+    protected static function _handleCallback(Error\AbstractError $error)
+    {
+        if (self::$callback && call_user_func(self::$callback, $error) !== false) {
+            self::addError($error);
+        }
     }
 }
