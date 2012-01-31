@@ -1,67 +1,34 @@
-var http  = require('http'),
-    xml   = require('o3-xml'),
-    qs    = require('querystring'),
+var pivotal = require('pivotal'),
+    util = require('util'),
     utils = require('./../utils.js');
-
-var util = require('util');
-
-// TODO: Generate XML by special util
 
 module.exports = Pivotal = function(options) {
     this._options = utils.merge({
-        host      : null,
-        port      : 80,
-        login     : null,
-        password  : null
+        token           : null,
+        label           : 'shiterator',
+        phpLabel        : 'php',
+        javaScriptLabel : 'javascript'
     }, options);
+
+    pivotal.useToken(this._options.token);
 }
 
-Redmine.prototype.post = function(error, count) {
+Pivotal.prototype.post = function(error, count) {
     count = count || 1;
 
-    var params = {
-            project_id : error.tracker.project,
-            tracker_id : error.tracker.id,
-            subject    : error.subject
-        },
-        options = {
-            method : 'GET',
-            path   : '/issues.xml?' + qs.stringify(params)
-        };
+    var errorLabel = this._options[ error instanceof JavaScript ? 'javaScriptLabel' : 'phpLabel'];
 
-    var request = http.request(this._addOptions(options), function(response) {
-        var data = '';
-        response.on('data', function(chunk) {
-            data += chunk;
-        });
-        response.on('end', function() {
-            try {
-                var element     = xml.parseFromString(data).documentElement,
-                    errorIdNode = element.selectNodes('/issues/issue[1]/id/text()')[0],
-                    countNode   = element.selectNodes('/issues/issue[1]/custom_fields/custom_field[@id=' + this._options.customFields.count + ']/value/text()')[0],
-                    statusNode  = element.selectNodes('/issues/issue[1]/status/@id')[0];
+    var story = pivotal.getStories(
+        error.tracker.project,
+        { limit : 1, filter : 'label:"shiterator" label:"' + errorLabel + '" "' +  error.subject + '"' }
+    );
 
-                if (errorIdNode) {
-                    var errorId      = errorIdNode.nodeValue,
-                        alreadyCount = parseInt(countNode.nodeValue),
-                        status       = parseInt(statusNode.nodeValue);
-
-                    this._update(errorId, error, alreadyCount + count, status == this._options.statusNew);
-                } else {
-                    this._create(error, count);
-                }
-            } catch (e) {
-                util.log("Can't parse Redmine issues by " + options.path + '. Response code: ' + response.statusCode + '. Response body: ' + data + '. Error: ' + util.inspect(e));
-            }
-        }.bind(this));
-    }.bind(this));
-    request.on('error', function(e){
-        util.log("Can't parse Redmine issue: " + e.message);
-    })
-    request.end();
+    this._update(errorId, error, alreadyCount + count, status == this._options.statusNew);
+} else {
+    this._create(error, count);
 };
 
-Redmine.prototype._create = function(error, count) {
+Pivotal.prototype._create = function(error, count) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                '<issue>' +
                    '<project_id>' + this._escape(error.tracker.project) + '</project_id>' +
@@ -102,7 +69,7 @@ Redmine.prototype._create = function(error, count) {
     request.end();
 }
 
-Redmine.prototype._update = function(errorId, error, count, skipJournal) {
+Pivotal.prototype._update = function(errorId, error, count, skipJournal) {
     var body = '<?xml version="1.0" encoding="UTF-8"?>' +
                        '<issue>' +
                            (skipJournal ? '<skip_journal>1</skip_journal>' : '') +
@@ -144,7 +111,7 @@ Redmine.prototype._update = function(errorId, error, count, skipJournal) {
     request.end();
 }
 
-Redmine.prototype._getDescription = function(error) {
+Pivotal.prototype._getDescription = function(error) {
     var description = "    " + error.message +
            "\n\n\n\n" +
            "##Stack\n\n";
@@ -166,7 +133,7 @@ Redmine.prototype._getDescription = function(error) {
     return description;
 }
 
-Redmine.prototype._addOptions = function(options) {
+Pivotal.prototype._addOptions = function(options) {
     return utils.merge({
         host   : this._options.host,
         port   : this._options.port,
@@ -178,12 +145,12 @@ Redmine.prototype._addOptions = function(options) {
 }
 
 // TODO: Doesn't work properly
-Redmine.prototype._escape = function(text) {
+Pivotal.prototype._escape = function(text) {
     //return '<![CDATA[' + text.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;') + ']]>';
     return '<![CDATA[' + text.toString().replace(/\]\]>/g, ' ]>').replace(/<!\[CDATA\[/g, ' <!CDATA[') + ']]>';
 }
 
-Redmine.prototype.isValidError = function(error) {
+Pivotal.prototype.isValidError = function(error) {
     for (var i = 0; i < Redmine.REQUIRED_FIELDS.length; i++) {
         if (!error.tracker[Redmine.REQUIRED_FIELDS[i]]) {
             return false;
@@ -193,4 +160,4 @@ Redmine.prototype.isValidError = function(error) {
     return true;
 };
 
-Redmine.REQUIRED_FIELDS = ['project', 'id', 'priority' ];
+Pivotal.REQUIRED_FIELDS = [ 'project', 'id', 'priority' ];
