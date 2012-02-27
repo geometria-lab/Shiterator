@@ -11,7 +11,7 @@ var Pivotal = function(options) {
     }, options);
 
     pivotal.useToken(this._options.token);
-    pivotal.debug = true;
+    //pivotal.debug = true;
 }
 
 Pivotal.prototype.post = function(error, count) {
@@ -70,8 +70,6 @@ Pivotal.prototype._getLabel = function(error) {
 }
 
 Pivotal.prototype._getDescription = function(error) {
-    return '...';
-
     var description = "    " + error.message +
            "\n\n\n\n" +
            "##Stack\n\n";
