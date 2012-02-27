@@ -4,7 +4,6 @@ var pivotal = require('pivotal'),
 
 var Pivotal = function(options) {
     this._options = utils.merge({
-        token           : null,
         label           : 'shiterator',
         phpLabel        : 'php',
         javaScriptLabel : 'javascript'
@@ -96,6 +95,6 @@ Pivotal.prototype.isValidError = function(error) {
     return true;
 };
 
-Pivotal.REQUIRED_FIELDS = [ 'project' ];
+Pivotal.REQUIRED_FIELDS = [ 'project', 'token' ];
 
 module.exports = Pivotal;
