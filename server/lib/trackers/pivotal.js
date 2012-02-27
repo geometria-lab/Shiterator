@@ -8,12 +8,12 @@ var Pivotal = function(options) {
         phpLabel        : 'php',
         javaScriptLabel : 'javascript'
     }, options);
-
-    pivotal.useToken(this._options.token);
 }
 
 Pivotal.prototype.post = function(error, count) {
     count = count || 1;
+
+    pivotal.useToken(error.tracker.token);
 
     var errorLabel = this._getLabel(error),
         filters    = { limit : 1, filter : 'label:"shiterator" label:"' + errorLabel + '" "' +  error.subject + '"' };
