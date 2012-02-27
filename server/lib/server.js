@@ -12,20 +12,14 @@ module.exports = Server = function(options) {
         port : 6060,
 
         updateInterval : 60 * 3, // 3 minute
-        
-        cluster : true,
 
         tracker : {
-            name     : null,
-            host     : null,
-            port     : 80,
-            login    : null,
-            password : null
+            name : null
         }
     }, options);
 
     if (this._options.tracker.constructor == Object) {
-        var tracker = Server.BUGTRACKS[this._options.tracker.name];
+        var tracker = Server.TRACKERS[this._options.tracker.name];
         if (!tracker) {
             throw new Error('Invalid tracker name');
         }
@@ -118,6 +112,7 @@ Server.prototype.listen = function(port, host) {
     util.log('Shiterator started on ' + host + ':' + port);
 }
 
-Server.BUGTRACKS = {
-    redmine : require('./trackers/redmine.js')
+Server.TRACKERS = {
+    redmine : require('./trackers/redmine.js'),
+    pivotal : require('./trackers/pivotal.js')
 }
