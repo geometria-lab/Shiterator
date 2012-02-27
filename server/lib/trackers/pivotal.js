@@ -11,6 +11,7 @@ var Pivotal = function(options) {
     }, options);
 
     pivotal.useToken(this._options.token);
+    pivotal.debug = true;
 }
 
 Pivotal.prototype.post = function(error, count) {
@@ -54,7 +55,7 @@ Pivotal.prototype._update = function(story, error, count) {
 
     var data = {
         name        : "(" + (count + beforeCount) + ") " + error.subject,
-        description : this._getDescription(error),
+        description : this._getDescription(error)
     };
 
     pivotal.updateStory(error.tracker.project, parseInt(story.id), data, function(err, response){
@@ -69,8 +70,6 @@ Pivotal.prototype._getLabel = function(error) {
 }
 
 Pivotal.prototype._getDescription = function(error) {
-    return ' ... ';
-
     var description = "    " + error.message +
            "\n\n\n\n" +
            "##Stack\n\n";
