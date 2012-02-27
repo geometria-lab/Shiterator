@@ -6,8 +6,8 @@ var Pivotal = function(options) {
     this._options = utils.merge({
         token           : '',
         label           : 'shiterator',
-        phpLabel        : 'shiterator-php',
-        javaScriptLabel : 'shiterator-javascript'
+        phpLabel        : 'php',
+        javaScriptLabel : 'javascript'
     }, options);
 
     pivotal.useToken(this._options.token);
