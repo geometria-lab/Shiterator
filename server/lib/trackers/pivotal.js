@@ -4,16 +4,17 @@ var pivotal = require('pivotal'),
 
 var Pivotal = function(options) {
     this._options = utils.merge({
+        token           : '',
         label           : 'shiterator',
-        phpLabel        : 'php',
-        javaScriptLabel : 'javascript'
+        phpLabel        : 'shiterator-php',
+        javaScriptLabel : 'shiterator-javascript'
     }, options);
+
+    pivotal.useToken(this._options.token);
 }
 
 Pivotal.prototype.post = function(error, count) {
     count = count || 1;
-
-    pivotal.useToken(error.tracker.token);
 
     var errorLabel = this._getLabel(error),
         filters    = { limit : 1, filter : 'label:"shiterator" label:"' + errorLabel + '" "' +  error.subject + '"' };
@@ -21,8 +22,8 @@ Pivotal.prototype.post = function(error, count) {
     pivotal.getStories(error.tracker.project, filters, function(err, response) {
         if (err) {
             util.log("Error get pivotal story with filter: " + util.inspect(filters) + ". Message: " + util.inspect(err));
-        } else if (response[0]) {
-            this._update(response[0], error, count);
+        } else if (response.story) {
+            this._update(response.story, error, count);
         } else {
             this._create(error, count);
         }
@@ -37,6 +38,10 @@ Pivotal.prototype._create = function(error, count) {
         labels         : this._options.label + ',' + this._getLabel(error)
     };
 
+    if (error.tracker.label) {
+        data.labels += ',' + error.tracker.label;
+    }
+
     pivotal.addStory(error.tracker.project, data, function(err, response){
         if (err) {
             util.log("Error create pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
@@ -49,12 +54,12 @@ Pivotal.prototype._update = function(story, error, count) {
 
     var data = {
         name        : "(" + (count + beforeCount) + ") " + error.subject,
-        description : this._getDescription(error)
+        description : this._getDescription(error),
     };
 
-    pivotal.updateStory(error.tracker.project, story.id, data, function(err, response){
+    pivotal.updateStory(error.tracker.project, parseInt(story.id), data, function(err, response){
         if (err) {
-            util.log("Error create pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
+            util.log("Error update pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
         }
     });
 }
@@ -95,6 +100,6 @@ Pivotal.prototype.isValidError = function(error) {
     return true;
 };
 
-Pivotal.REQUIRED_FIELDS = [ 'project', 'token' ];
+Pivotal.REQUIRED_FIELDS = [ 'project' ];
 
 module.exports = Pivotal;

@@ -13,7 +13,7 @@ abstract class AbstractError
         'file'    => null,
         'line'    => null,
         'stack'   => null,
-        'tracker' => array(),
+        'tracker' => null,
         'custom'  => array(),
     );
 
@@ -82,40 +82,13 @@ abstract class AbstractError
         return $this;
     }
 
-    public function getTrackerId()
+    public function tracker()
     {
-        return $this->_data['tracker']['id'];
-    }
+        if ($this->_data['tracker'] === null) {
+            $this->_data['tracker'] = new \stdClass();
+        }
 
-    public function setTrackerId($id)
-    {
-        $this->_data['tracker']['id'] = $id;
-
-        return $this;
-    }
-
-    public function getTrackerProject()
-    {
-        return $this->_data['tracker']['project'];
-    }
-
-    public function setTrackerProject($project)
-    {
-        $this->_data['tracker']['project'] = $project;
-
-        return $this;
-    }
-
-    public function getTrackerPriority()
-    {
-        return $this->_data['tracker']['priority'];
-    }
-
-    public function setTrackerPriority($priority)
-    {
-        $this->_data['tracker']['priority'] = $priority;
-
-        return $this;
+        return $this->_data['tracker'];
     }
 
     public function getCustom($name)

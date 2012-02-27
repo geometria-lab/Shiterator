@@ -24,7 +24,7 @@ class Exception extends AbstractError
             'file'    => $e->getFile(),
             'line'    => $e->getLine(),
             'stack'   => $e->getTraceAsString(),
-            'tracker' => array(),
+            'tracker' => null,
             'custom'  => static::_getDefaultCustom(),
         );
     }

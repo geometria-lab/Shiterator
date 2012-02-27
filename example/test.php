@@ -3,17 +3,10 @@
 require_once __DIR__ . '/../clients/php/Shiterator/ErrorHandler.php';
 
 Shiterator\ErrorHandler::set(function($error) {
+    $error->tracker()->project = 486449;
     if ($error->isFatal()) {
-        $error->setTrackerPriority(3);
-
-        echo 'Sorry guys... See you later.';
-    } else {
-        $error->setTrackerPriority(2);
+        $error->tracker()->label = 'shiterator-fatal';
     }
-    $error->setTrackerId(6)
-          ->setTrackerProject('geometria');
-
-    $error->myCustomField = 'Works';
 }, '127.0.0.1');
 
 $a = $b - 1;

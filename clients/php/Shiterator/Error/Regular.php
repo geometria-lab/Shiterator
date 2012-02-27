@@ -17,7 +17,7 @@ abstract class Regular extends AbstractError
             'file'    => $file,
             'line'    => $line,
             'stack'   => static::_backtraceToString($backTrace),
-            'tracker' => array(),
+            'tracker' => null,
             'custom'  => static::_getDefaultCustom(),
         );
 

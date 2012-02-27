@@ -1,17 +1,10 @@
 var options = {
     host     : "0.0.0.0",
     port     : 6060,
+    updateInterval : 10,
     tracker  : {
-        name         : "redmine",
-        host         : "bugs.geometria-lab.net",
-        login        : "ErrorBot",
-        password     : "c87d8asudsadq87e6r23hdksaljdfowq837",
-        customFields : {
-            count : 22,
-            line  : 18,
-            file  : 17
-        },
-        statusNew : 3
+        name  : "pivotal",
+        token : "b8b05cd9d91c743fd601a1dc3768aead",
     }
 };
 
