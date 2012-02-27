@@ -70,6 +70,8 @@ Pivotal.prototype._getLabel = function(error) {
 }
 
 Pivotal.prototype._getDescription = function(error) {
+    return '...';
+
     var description = "    " + error.message +
            "\n\n\n\n" +
            "##Stack\n\n";
