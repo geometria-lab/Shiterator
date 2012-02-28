@@ -81,7 +81,7 @@ Pivotal.prototype._getDescription = function(error) {
            "##Stack\n\n";
 
     var stack = error.stack.split("\n");
-    for (var i = 0; i < stack.length; i++) {
+    for (var i = 0, l = stack.length > 20 ? 20 : stack.length; i < l; i++) {
         description += "    " + stack[i] + "\n";
     }
 
