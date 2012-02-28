@@ -3,8 +3,8 @@ module.exports = ShiteratorError = function(json) {
 }
 
 ShiteratorError.prototype._setFields = function(json) {
-    for (var i = 0; i < ShiteratorError.REQUIRED_FIELDS.length; i++) {
-        this[ShiteratorError.REQUIRED_FIELDS[i]] = json[ShiteratorError.REQUIRED_FIELDS[i]];
+    for (var name in ShiteratorError.REQUIRED_FIELDS) {
+        this[name] = json[name];
     }
 
     this.time = new Date();
