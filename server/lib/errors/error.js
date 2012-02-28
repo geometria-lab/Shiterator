@@ -20,7 +20,7 @@ ShiteratorError.REQUIRED_FIELDS = { 'type' : true, 'subject' : true, 'message' :
 
 ShiteratorError.create = function(json) {
     for (var name in ShiteratorError.REQUIRED_FIELDS) {
-        if (json[name] === undefined || (ShiteratorError.REQUIRED_FIELDS[name] && json[name] !== '')) {
+        if (json[name] === undefined || (ShiteratorError.REQUIRED_FIELDS[name] && json[name] === '')) {
             return false;
         }
     }
