@@ -43,9 +43,10 @@ Pivotal.prototype._create = function(error, count) {
         data.labels += ',' + error.tracker.label;
     }
 
-    pivotal.addStory(error.tracker.project, data, function(err, response){
+    pivotal.addStory(error.tracker.project, data, function(err, response) {
         if (err) {
-            util.log("Error create pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
+            util.log("Error create pivotal story: " + error.subject);
+            //util.log("Error create pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
         }
     });
 }
@@ -60,7 +61,8 @@ Pivotal.prototype._update = function(story, error, count) {
 
     pivotal.updateStory(error.tracker.project, parseInt(story.id), data, function(err, response){
         if (err) {
-            util.log("Error update pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
+            util.log("Error update pivotal story: " + error.subject);
+            //util.log("Error update pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
         }
     });
 }
