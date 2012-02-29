@@ -21,6 +21,7 @@ Pivotal.prototype.post = function(error, count) {
         filters    = { limit : 1, filter : 'label:"shiterator" label:"' + errorLabel + '" "' +  error.subject + '"' };
 
     pivotal.getStories(error.tracker.project, filters, function(err, response) {
+        util.log('Get with state ' + util.inspect(response.story.current_state));
         if (err) {
             util.log("Error get pivotal story with filter: " + util.inspect(filters) + ". Message: " + util.inspect(err));
         } else if (response.story && (response.story.current_state == 'delivered' || response.story.current_state == 'accepted')) {
