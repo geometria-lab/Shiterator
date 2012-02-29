@@ -23,7 +23,7 @@ Pivotal.prototype.post = function(error, count) {
     pivotal.getStories(error.tracker.project, filters, function(err, response) {
         if (err) {
             util.log("Error get pivotal story with filter: " + util.inspect(filters) + ". Message: " + util.inspect(err));
-        } else if (response.story) {
+        } else if (response.story && (response.story.current_state == 'delivered' || response.story.current_state == 'accepted')) {
             this._update(response.story, error, count);
         } else {
             this._create(error, count);
@@ -57,8 +57,8 @@ Pivotal.prototype._update = function(story, error, count) {
     var beforeCount = parseInt(story.name.substring(1, story.name.indexOf(')')));
 
     var data = {
-        name        : "(" + (count + beforeCount) + ") " + error.subject,
-        description : '...' //this._getDescription(error)
+        name        : "(" + (count + beforeCount) + ") " + error.subject
+        //description : this._getDescription(error)
     };
 
     pivotal.updateStory(error.tracker.project, parseInt(story.id), data, function(err, response){
@@ -81,7 +81,7 @@ Pivotal.prototype._getDescription = function(error) {
            "##Stack\n\n";
 
     var stack = error.stack.split("\n");
-    for (var i = 0, l = stack.length > 20 ? 20 : stack.length; i < l; i++) {
+    for (var i = 0, l = stack.length; i < l; i++) { //> 20 ? 20 : stack.length
         description += "    " + stack[i] + "\n";
     }
 
