@@ -58,7 +58,7 @@ Pivotal.prototype._update = function(story, error, count) {
 
     var data = {
         name        : "(" + (count + beforeCount) + ") " + error.subject,
-        description : this._getDescription(error)
+        description : '...' //this._getDescription(error)
     };
 
     pivotal.updateStory(error.tracker.project, parseInt(story.id), data, function(err, response){
