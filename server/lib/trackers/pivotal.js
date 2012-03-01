@@ -23,6 +23,10 @@ Pivotal.prototype.post = function(error, count) {
     pivotal.getStories(error.tracker.project, filters, function(err, response) {
         if (err) {
             util.log("Error get pivotal story with filter: " + util.inspect(filters) + ". Message: " + util.inspect(err));
+
+            setTimeout(function(){
+                this.post(error, count);
+            }.bind(this), 1000);
         } else if (response.story && response.story.current_state != 'delivered' && response.story.current_state != 'accepted') {
             this._update(response.story, error, count);
         } else {
