@@ -66,7 +66,7 @@ Pivotal.prototype._update = function(story, error, count) {
             util.log("Error update pivotal story: " + error.subject + '. Description size: ' + data.description.length);
             //util.log("Error update pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
         } else {
-            util.log('update ok: ' + data.description.length);
+            //util.log('update ok: ' + data.description.length);
         }
     });
 }
