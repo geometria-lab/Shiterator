@@ -11,7 +11,6 @@ var Pivotal = function(options) {
     }, options);
 
     pivotal.useToken(this._options.token);
-    //pivotal.debug = true;
 }
 
 Pivotal.prototype.post = function(error, count) {
@@ -46,9 +45,6 @@ Pivotal.prototype._create = function(error, count) {
     pivotal.addStory(error.tracker.project, data, function(err, response) {
         if (err) {
             util.log("Error create pivotal story: " + error.subject + '. Description size: ' + data.description.length);
-            //util.log("Error create pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
-        } else {
-            util.log('create ok: ' + data.description.length);
         }
     });
 }
@@ -57,16 +53,12 @@ Pivotal.prototype._update = function(story, error, count) {
     var beforeCount = parseInt(story.name.substring(1, story.name.indexOf(')')));
 
     var data = {
-        name        : "(" + (count + beforeCount) + ") " + error.subject
-        //description : this._getDescription(error)
+        name : "(" + (count + beforeCount) + ") " + error.subject
     };
 
     pivotal.updateStory(error.tracker.project, parseInt(story.id), data, function(err, response){
         if (err) {
-            util.log("Error update pivotal story: " + error.subject + '. Description size: ' + data.description.length);
-            //util.log("Error update pivotal story with data: " + util.inspect(data) + ". Message: " + util.inspect(err));
-        } else {
-            //util.log('update ok: ' + data.description.length);
+            util.log("Error update pivotal story: " + error.subject);
         }
     });
 }
