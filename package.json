@@ -1,5 +1,5 @@
 {
-    "name": "Shiterator",
+    "name": "shiterator",
     "version": "0.0.1",
     "description": "Collect application errors and post to your favorite tracker.",
     "keywords" : ["error", "bugtrack", "exceptions", "logging"],
