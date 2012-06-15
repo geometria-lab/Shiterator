@@ -1,25 +1,31 @@
 {
-    "name": "shiterator",
+    "name": "Shiterator",
     "version": "0.0.1",
-    "description": "Collect application errors and post to your bugtrack.",
-    "keywords" : ["error", "bugtrack"],
-    "homepage": "http://geometria-lab.net",
+    "description": "Collect application errors and post to your favorite tracker.",
+    "keywords" : ["error", "bugtrack", "exceptions", "logging"],
+    "homepage": "https://github.com/GeometriaLab/Shiterator",
     "author": "Geometria Lab",
     "contributors": [
         { "name": "Ivan Shumkov", "email": "ivan@shumkov.ru" }
     ],
-    "main": "./server",
+    "bin" : {
+        "shiterator" : "./bin/shiterator.js"
+    },
+    "main": "./lib/shiterator.js",
     "repository": {
         "type" : "git",
-        "url"  : "git://github.com/geometria-lab/Shiterator.git"
+        "url"  : "https://github.com/GeometriaLab/Shiterator.git"
     },
     "dependencies" : {
-        "o3-xml"  : "*",
-        "pivotal" : "*"
+        "express"          : "2.5.9",
+        "express-resource" : "0.2.4",
+        "json-schema"      : "0.2.0",
+        "mongoose"         : "2.6.5",
+        "xmlbuilder"       : "0.3.1"
     },
-    "engines" : [ "node >=0.4" ],
+    "engines" : [ "node >=0.6.5" ],
     "licenses" : [{
-        "type" : "BSD",
+        "type" : "New BSD",
         "url"  : "http://www.opensource.org/licenses/bsd-license.php"
     }]
 }
