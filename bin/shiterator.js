@@ -8,10 +8,6 @@ var fs         = require('fs'),
 var packageJson = fs.readFileSync(__dirname + '/../package.json', 'utf8'),
     packageInfo = JSON.parse(packageJson);
 
-function configExists(config) {
-    return path.existsSync(config);
-}
-
 function getShiterator() {
     var Shiterator  = require('../lib/shiterator.js'),
         optionsJson = fs.readFileSync(program.config, 'utf8'),
@@ -22,7 +18,7 @@ function getShiterator() {
 
 program
     .version(packageInfo.version)
-    .option('-c, --config <json file>', 'Configuration file [Default config]', configExists, __dirname + '/../config.json');
+    .option('-c, --config <json file>', 'Configuration file [Default config]', __dirname + '/../config.json');
 
 program
     .command('start')

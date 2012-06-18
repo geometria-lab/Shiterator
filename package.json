@@ -1,6 +1,6 @@
 {
     "name": "shiterator",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Collect application errors and post to your favorite tracker.",
     "keywords" : ["error", "bugtrack", "exceptions", "logging"],
     "homepage": "https://github.com/GeometriaLab/Shiterator",
