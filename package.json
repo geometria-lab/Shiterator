@@ -20,7 +20,7 @@
         "express"          : "2.5.9",
         "express-resource" : "0.2.4",
         "json-schema"      : "0.2.0",
-        "mongoose"         : "2.6.5",
+        "mongoose"         : "2.7.0",
         "xmlbuilder"       : "0.3.1",
         "commander"        : "0.6.1"
     },
